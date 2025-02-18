@@ -13,6 +13,8 @@ pub mod radix;
 pub mod strict;
 pub mod unchecked;
 
+pub mod bytesholder;
+
 #[cfg(test)]
 macro_rules! tests {
     ($int: ty) => {

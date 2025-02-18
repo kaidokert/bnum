@@ -177,6 +177,28 @@ macro_rules! impls {
             }
         }
 
+        impl<const N: usize> num_traits::FromBytes for $Int<N> {
+            type Bytes = crate::int::bytesholder::BytesHolder<N>;
+
+            fn from_be_bytes(_bytes: &Self::Bytes) -> Self {
+                todo!()
+            }
+        
+            fn from_le_bytes(_bytes: &Self::Bytes) -> Self {
+                todo!()
+            }
+        }
+        impl<const N: usize> num_traits::ToBytes for $Int<N> {
+            type Bytes = crate::int::bytesholder::BytesHolder<N>;
+
+            fn to_be_bytes(&self) -> Self::Bytes {
+                todo!()
+            }
+
+            fn to_le_bytes(&self) -> Self::Bytes {
+                todo!()
+            }
+        }
         // #[cfg(feature = "nightly")]
         // #[doc = crate::doc::requires_feature!("nightly")]
         // impl<const N: usize> FromBytes for $Int<N> {
