@@ -51,6 +51,7 @@ type Byte = u8;
 
 pub use integer::{Int, Integer, Uint};
 pub use overflow::OverflowMode;
+pub use types::{WI128, WI1024, WI2048, WI256, WI4096, WI512, WI8192, WU128, WU1024, WU2048, WU256, WU4096, WU512, WU8192};
 #[cfg(any(feature = "numtraits", feature = "num-traits-only"))]
 pub use integer::ByteArray;
 

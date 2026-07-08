@@ -26,6 +26,32 @@ macro_rules! int_types {
     };
 }
 
+macro_rules! wrapping_int_types {
+    { $($bits: literal $wu: ident $wi: ident; ) *}  => {
+        $(
+            #[doc = concat!(
+                $bits, "-bit unsigned integer type that always wraps on overflow, regardless of build profile.",
+                "\n\nIntended for crypto field arithmetic where 2's-complement wrapping semantics are required."
+            )]
+            pub type $wu = crate::Uint::<
+                { crate::literal_parse::get_size_params_from_bits($bits).0 },
+                { crate::literal_parse::get_size_params_from_bits($bits).1 },
+                // OverflowMode::Wrap = 0
+                0,
+            >;
+
+            #[doc = concat!(
+                $bits, "-bit signed integer type that always wraps on overflow, regardless of build profile.",
+            )]
+            pub type $wi = crate::Int::<
+                { crate::literal_parse::get_size_params_from_bits($bits).0 },
+                { crate::literal_parse::get_size_params_from_bits($bits).1 },
+                0,
+            >;
+        )*
+    };
+}
+
 macro_rules! call_types_macro {
     ($name: ident) => {
         $name! {
@@ -41,6 +67,16 @@ macro_rules! call_types_macro {
 }
 
 call_types_macro!(int_types);
+
+wrapping_int_types! {
+    128 WU128 WI128;
+    256 WU256 WI256;
+    512 WU512 WI512;
+    1024 WU1024 WI1024;
+    2048 WU2048 WI2048;
+    4096 WU4096 WI4096;
+    8192 WU8192 WI8192;
+}
 
 // #[cfg(feature = "float")]
 // /// 16-bit floating point type with 10 bits of precision, stored as the binary16 (half precision) format defined in IEEE 754-2019.
