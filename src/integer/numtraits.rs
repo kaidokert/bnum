@@ -10,9 +10,9 @@ use num_traits::ops::overflowing::{OverflowingAdd, OverflowingMul, OverflowingSu
 use num_traits::{
     AsPrimitive, Bounded, CheckedAdd, CheckedDiv, CheckedEuclid, CheckedMul, CheckedNeg,
     CheckedRem, CheckedShl, CheckedShr, CheckedSub, ConstOne, ConstZero, Euclid, FromBytes,
-    FromPrimitive, MulAdd, MulAddAssign, Num, One, Pow, PrimInt, Saturating, SaturatingAdd,
-    SaturatingMul, SaturatingSub, Signed, ToBytes, ToPrimitive, Unsigned, WrappingAdd, WrappingMul,
-    WrappingNeg, WrappingShl, WrappingShr, WrappingSub, Zero,
+    FromPrimitive, MulAdd, MulAddAssign, Num, One, Pow, PrimBits, PrimInt, Saturating,
+    SaturatingAdd, SaturatingMul, SaturatingSub, Signum, Signed, ToBytes, ToPrimitive, Unsigned,
+    WrappingAdd, WrappingMul, WrappingNeg, WrappingShl, WrappingShr, WrappingSub, Zero,
 };
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Bounded for Integer<S, N, B, OM> {
@@ -31,8 +31,8 @@ macro_rules! num_trait_impl {
     ($tr: ident, $method: ident, $ret: ty) => {
         impl<const S: bool, const N: usize, const B: usize, const OM: u8> $tr for Integer<S, N, B, OM> {
             #[inline]
-            fn $method(&self, rhs: &Self) -> $ret {
-                Self::$method(*self, *rhs)
+            fn $method(self, rhs: Self) -> $ret {
+                Self::$method(self, rhs)
             }
         }
     };
@@ -57,68 +57,83 @@ num_trait_impl!(OverflowingSub, overflowing_sub, (Self, bool));
 num_trait_impl!(OverflowingMul, overflowing_mul, (Self, bool));
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> CheckedNeg for Integer<S, N, B, OM> {
+    type Output = Self;
     #[inline]
-    fn checked_neg(&self) -> Option<Self> {
-        Self::checked_neg(*self)
+    fn checked_neg(self) -> Option<Self> {
+        Self::checked_neg(self)
     }
 }
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> CheckedShl for Integer<S, N, B, OM> {
     #[inline]
-    fn checked_shl(&self, rhs: Exponent) -> Option<Self> {
-        Self::checked_shl(*self, rhs)
+    fn checked_shl(self, rhs: Exponent) -> Option<Self> {
+        Self::checked_shl(self, rhs)
     }
 }
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> CheckedShr for Integer<S, N, B, OM> {
     #[inline]
-    fn checked_shr(&self, rhs: Exponent) -> Option<Self> {
-        Self::checked_shr(*self, rhs)
+    fn checked_shr(self, rhs: Exponent) -> Option<Self> {
+        Self::checked_shr(self, rhs)
     }
 }
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> CheckedEuclid for Integer<S, N, B, OM> {
     #[inline]
-    fn checked_div_euclid(&self, rhs: &Self) -> Option<Self> {
-        Self::checked_div_euclid(*self, *rhs)
+    fn checked_div_euclid(self, rhs: Self) -> Option<Self> {
+        Self::checked_div_euclid(self, rhs)
     }
 
     #[inline]
-    fn checked_rem_euclid(&self, rhs: &Self) -> Option<Self> {
-        Self::checked_rem_euclid(*self, *rhs)
+    fn checked_rem_euclid(self, rhs: Self) -> Option<Self> {
+        Self::checked_rem_euclid(self, rhs)
+    }
+
+    #[inline]
+    fn checked_div_rem_euclid(self, rhs: Self) -> Option<(Self, Self)> {
+        match (Self::checked_div_euclid(self, rhs), Self::checked_rem_euclid(self, rhs)) {
+            (Some(d), Some(r)) => Some((d, r)),
+            _ => None,
+        }
     }
 }
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Euclid for Integer<S, N, B, OM> {
     #[inline]
-    fn div_euclid(&self, rhs: &Self) -> Self {
-        Self::div_euclid(*self, *rhs)
+    fn div_euclid(self, rhs: Self) -> Self {
+        Self::div_euclid(self, rhs)
     }
 
     #[inline]
-    fn rem_euclid(&self, rhs: &Self) -> Self {
-        Self::rem_euclid(*self, *rhs)
+    fn rem_euclid(self, rhs: Self) -> Self {
+        Self::rem_euclid(self, rhs)
+    }
+
+    #[inline]
+    fn div_rem_euclid(self, rhs: Self) -> (Self, Self) {
+        (Self::div_euclid(self, rhs), Self::rem_euclid(self, rhs))
     }
 }
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> WrappingNeg for Integer<S, N, B, OM> {
+    type Output = Self;
     #[inline]
-    fn wrapping_neg(&self) -> Self {
-        Self::wrapping_neg(*self)
+    fn wrapping_neg(self) -> Self {
+        Self::wrapping_neg(self)
     }
 }
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> WrappingShl for Integer<S, N, B, OM> {
     #[inline]
-    fn wrapping_shl(&self, rhs: Exponent) -> Self {
-        Self::wrapping_shl(*self, rhs)
+    fn wrapping_shl(self, rhs: Exponent) -> Self {
+        Self::wrapping_shl(self, rhs)
     }
 }
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> WrappingShr for Integer<S, N, B, OM> {
     #[inline]
-    fn wrapping_shr(&self, rhs: Exponent) -> Self {
-        Self::wrapping_shr(*self, rhs)
+    fn wrapping_shr(self, rhs: Exponent) -> Self {
+        Self::wrapping_shr(self, rhs)
     }
 }
 
@@ -238,13 +253,13 @@ impl<const S: bool, const N: usize, const OM: u8> ToBytes for Integer<S, N, 0, O
     type Bytes = [u8; N];
 
     #[inline]
-    fn to_be_bytes(&self) -> [u8; N] {
-        Self::to_be_bytes(*self)
+    fn to_be_bytes(self) -> [u8; N] {
+        Self::to_be_bytes(self)
     }
 
     #[inline]
-    fn to_le_bytes(&self) -> [u8; N] {
-        Self::to_le_bytes(*self)
+    fn to_le_bytes(self) -> [u8; N] {
+        Self::to_le_bytes(self)
     }
 }
 
@@ -291,7 +306,12 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> One for Intege
 
     #[inline]
     fn is_one(&self) -> bool {
-        Self::is_one(&self)
+        Self::is_one(self)
+    }
+
+    #[inline]
+    fn set_one(&mut self) {
+        *self = Self::ONE;
     }
 }
 
@@ -307,7 +327,12 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Zero for Integ
 
     #[inline]
     fn is_zero(&self) -> bool {
-        Self::is_zero(&self)
+        Self::is_zero(self)
+    }
+
+    #[inline]
+    fn set_zero(&mut self) {
+        *self = Self::ZERO;
     }
 }
 
@@ -501,7 +526,8 @@ macro_rules! prim_int_method {
     };
 }
 
-impl<const S: bool, const N: usize, const OM: u8> PrimInt for Integer<S, N, 0, OM> {
+// const-num-traits splits PrimInt: all bit methods move to PrimBits; PrimInt retains only pow.
+impl<const S: bool, const N: usize, const OM: u8> PrimBits for Integer<S, N, 0, OM> {
     #[inline]
     fn from_be(x: Self) -> Self {
         if cfg!(target_endian = "big") {
@@ -546,7 +572,6 @@ impl<const S: bool, const N: usize, const OM: u8> PrimInt for Integer<S, N, 0, O
         fn rotate_left(self, n: u32) -> Self;
         fn rotate_right(self, n: u32) -> Self;
         fn swap_bytes(self) -> Self;
-        fn pow(self, exp: u32) -> Self;
         fn leading_ones(self) -> u32;
         fn trailing_ones(self) -> u32;
         fn reverse_bits(self) -> Self;
@@ -570,6 +595,13 @@ impl<const S: bool, const N: usize, const OM: u8> PrimInt for Integer<S, N, 0, O
     #[inline]
     fn unsigned_shr(self, n: u32) -> Self {
         (self.force_sign::<false>() >> n).force_sign()
+    }
+}
+
+impl<const S: bool, const N: usize, const OM: u8> PrimInt for Integer<S, N, 0, OM> {
+    #[inline]
+    fn pow(self, exp: u32) -> Self {
+        Self::pow(self, exp)
     }
 }
 
@@ -633,33 +665,37 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Roots for Inte
 
 impl<const N: usize, const B: usize, const OM: u8> Unsigned for Uint<N, B, OM> {}
 
+// const-num-traits extracts signum into its own Signum atom.
+impl<const N: usize, const B: usize, const OM: u8> Signum for Int<N, B, OM> {
+    type Output = Self;
+    #[inline]
+    fn signum(self) -> Self {
+        Self::signum(self)
+    }
+}
+
 impl<const N: usize, const B: usize, const OM: u8> Signed for Int<N, B, OM> {
     #[inline]
-    fn abs(&self) -> Self {
-        Self::abs(*self)
+    fn abs(self) -> Self {
+        Self::abs(self)
     }
 
     #[inline]
-    fn abs_sub(&self, other: &Self) -> Self {
+    fn abs_sub(self, other: Self) -> Self {
         if self <= other {
             Self::ZERO
         } else {
-            *self - *other
+            self - other
         }
     }
 
     #[inline]
-    fn signum(&self) -> Self {
-        Self::signum(*self)
+    fn is_positive(self) -> bool {
+        Self::is_positive(self)
     }
 
     #[inline]
-    fn is_positive(&self) -> bool {
-        Self::is_positive(*self)
-    }
-
-    #[inline]
-    fn is_negative(&self) -> bool {
+    fn is_negative(self) -> bool {
         self.is_negative_internal()
     }
 }
@@ -705,53 +741,53 @@ mod tests {
         }
 
         test_bignum! {
-            function: <stest as CheckedAdd>::checked_add(a: ref &stest, b: ref &stest)
+            function: <stest as CheckedAdd>::checked_add(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as CheckedSub>::checked_sub(a: ref &stest, b: ref &stest)
+            function: <stest as CheckedSub>::checked_sub(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as CheckedMul>::checked_mul(a: ref &stest, b: ref &stest)
+            function: <stest as CheckedMul>::checked_mul(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as CheckedDiv>::checked_div(a: ref &stest, b: ref &stest)
+            function: <stest as CheckedDiv>::checked_div(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as CheckedRem>::checked_rem(a: ref &stest, b: ref &stest)
+            function: <stest as CheckedRem>::checked_rem(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as CheckedNeg>::checked_neg(a: ref &stest)
+            function: <stest as CheckedNeg>::checked_neg(a: stest)
         }
         test_bignum! {
-            function: <stest as CheckedShl>::checked_shl(a: ref &stest, b: u8)
+            function: <stest as CheckedShl>::checked_shl(a: stest, b: u8)
         }
         test_bignum! {
-            function: <stest as CheckedShr>::checked_shr(a: ref &stest, b: u8)
+            function: <stest as CheckedShr>::checked_shr(a: stest, b: u8)
         }
         test_bignum! {
-            function: <stest as CheckedEuclid>::checked_div_euclid(a: ref &stest, b: ref &stest)
+            function: <stest as CheckedEuclid>::checked_div_euclid(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as CheckedEuclid>::checked_rem_euclid(a: ref &stest, b: ref &stest)
+            function: <stest as CheckedEuclid>::checked_rem_euclid(a: stest, b: stest)
         }
 
         test_bignum! {
-            function: <stest as Euclid>::div_euclid(a: ref &stest, b: ref &stest),
+            function: <stest as Euclid>::div_euclid(a: stest, b: stest),
             skip: a.checked_div_euclid(b).is_none()
         }
         test_bignum! {
-            function: <stest as Euclid>::rem_euclid(a: ref &stest, b: ref &stest),
+            function: <stest as Euclid>::rem_euclid(a: stest, b: stest),
             skip: a.checked_rem_euclid(b).is_none()
         }
 
         test_bignum! {
-            function: <stest as SaturatingAdd>::saturating_add(a: ref &stest, b: ref &stest)
+            function: <stest as SaturatingAdd>::saturating_add(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as SaturatingSub>::saturating_sub(a: ref &stest, b: ref &stest)
+            function: <stest as SaturatingSub>::saturating_sub(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as SaturatingMul>::saturating_mul(a: ref &stest, b: ref &stest)
+            function: <stest as SaturatingMul>::saturating_mul(a: stest, b: stest)
         }
 
         test_bignum! {
@@ -762,31 +798,31 @@ mod tests {
         }
 
         test_bignum! {
-            function: <stest as WrappingAdd>::wrapping_add(a: ref &stest, b: ref &stest)
+            function: <stest as WrappingAdd>::wrapping_add(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as OverflowingAdd>::overflowing_add(a: ref &stest, b: ref &stest)
+            function: <stest as OverflowingAdd>::overflowing_add(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as WrappingSub>::wrapping_sub(a: ref &stest, b: ref &stest)
+            function: <stest as WrappingSub>::wrapping_sub(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as OverflowingSub>::overflowing_sub(a: ref &stest, b: ref &stest)
+            function: <stest as OverflowingSub>::overflowing_sub(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as WrappingMul>::wrapping_mul(a: ref &stest, b: ref &stest)
+            function: <stest as WrappingMul>::wrapping_mul(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as OverflowingMul>::overflowing_mul(a: ref &stest, b: ref &stest)
+            function: <stest as OverflowingMul>::overflowing_mul(a: stest, b: stest)
         }
         test_bignum! {
-            function: <stest as WrappingNeg>::wrapping_neg(a: ref &stest)
+            function: <stest as WrappingNeg>::wrapping_neg(a: stest)
         }
         test_bignum! {
-            function: <stest as WrappingShl>::wrapping_shl(a: ref &stest, b: u16)
+            function: <stest as WrappingShl>::wrapping_shl(a: stest, b: u16)
         }
         test_bignum! {
-            function: <stest as WrappingShr>::wrapping_shr(a: ref &stest, b: u16)
+            function: <stest as WrappingShr>::wrapping_shr(a: stest, b: u16)
         }
 
         test_bignum! {
@@ -887,19 +923,19 @@ mod tests {
         }
 
         test_bignum! {
-            function: <stest as PrimInt>::unsigned_shl(a: stest, n: u8),
+            function: <stest as PrimBits>::unsigned_shl(a: stest, n: u8),
             skip: n >= <stest>::BITS as u8
         }
         test_bignum! {
-            function: <stest as PrimInt>::unsigned_shr(a: stest, n: u8),
+            function: <stest as PrimBits>::unsigned_shr(a: stest, n: u8),
             skip: n >= <stest>::BITS as u8
         }
         test_bignum! {
-            function: <stest as PrimInt>::signed_shl(a: stest, n: u8),
+            function: <stest as PrimBits>::signed_shl(a: stest, n: u8),
             skip: n >= <stest>::BITS as u8
         }
         test_bignum! {
-            function: <stest as PrimInt>::signed_shr(a: stest, n: u8),
+            function: <stest as PrimBits>::signed_shr(a: stest, n: u8),
             skip: n >= <stest>::BITS as u8
         }
     }
@@ -908,21 +944,21 @@ mod tests {
         testing signed;
 
         test_bignum! {
-            function: <stest as Signed>::abs(a: ref &stest),
+            function: <stest as Signed>::abs(a: stest),
             skip: debug_skip!(a == <stest>::MIN)
         }
         test_bignum! {
-            function: <stest as Signed>::abs_sub(a: ref &stest, b: ref &stest),
+            function: <stest as Signed>::abs_sub(a: stest, b: stest),
             skip: debug_skip!(a > b && a.checked_sub(b).is_none())
         }
         test_bignum! {
-            function: <stest as Signed>::signum(a: ref &stest)
+            function: <stest as Signum>::signum(a: stest)
         }
         test_bignum! {
-            function: <stest as Signed>::is_positive(a: ref &stest)
+            function: <stest as Signed>::is_positive(a: stest)
         }
         test_bignum! {
-            function: <stest as Signed>::is_negative(a: ref &stest)
+            function: <stest as Signed>::is_negative(a: stest)
         }
     }
 }
