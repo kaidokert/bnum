@@ -13,6 +13,8 @@ mod math;
 mod mul;
 #[cfg(any(feature = "numtraits", feature = "num-traits-only"))]
 mod numtraits;
+#[cfg(any(feature = "numtraits", feature = "num-traits-only"))]
+pub use numtraits::ByteArray;
 #[cfg(feature = "cios")]
 mod cios;
 mod ops;

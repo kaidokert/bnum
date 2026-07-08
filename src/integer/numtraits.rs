@@ -241,31 +241,64 @@ impl<const S: bool, const N: usize, const B: usize, const R: bool, const M: usiz
     }
 }
 
+/// Fixed-size byte array with `Default` for all `N` and full `NumBytes`
+/// compliance. Used as the `Bytes` associated type for `ToBytes`/`FromBytes`
+/// so that the `FixedWidthUnsignedInt` blanket impl in `rsa_heapless` (which
+/// requires `Bytes: Default`) works for large N where `[u8; N]: Default` is
+/// not yet stable.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ByteArray<const N: usize>(pub [u8; N]);
+
+impl<const N: usize> Default for ByteArray<N> {
+    fn default() -> Self { ByteArray([0u8; N]) }
+}
+impl<const N: usize> AsRef<[u8]> for ByteArray<N> {
+    fn as_ref(&self) -> &[u8] { &self.0 }
+}
+impl<const N: usize> AsMut<[u8]> for ByteArray<N> {
+    fn as_mut(&mut self) -> &mut [u8] { &mut self.0 }
+}
+impl<const N: usize> core::borrow::Borrow<[u8]> for ByteArray<N> {
+    fn borrow(&self) -> &[u8] { &self.0 }
+}
+impl<const N: usize> core::borrow::BorrowMut<[u8]> for ByteArray<N> {
+    fn borrow_mut(&mut self) -> &mut [u8] { &mut self.0 }
+}
+impl<const N: usize> core::fmt::Debug for ByteArray<N> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "ByteArray(")?;
+        for b in &self.0 { write!(f, "{:02x}", b)?; }
+        write!(f, ")")
+    }
+}
+#[cfg(feature = "zeroize")]
+impl<const N: usize> zeroize::DefaultIsZeroes for ByteArray<N> {}
+
 impl<const S: bool, const N: usize, const OM: u8> FromBytes for Integer<S, N, 0, OM> {
-    type Bytes = [u8; N];
+    type Bytes = ByteArray<N>;
 
     #[inline]
-    fn from_be_bytes(bytes: &[u8; N]) -> Self {
-        Self::from_be_bytes(*bytes)
+    fn from_be_bytes(bytes: &ByteArray<N>) -> Self {
+        Self::from_be_bytes(bytes.0)
     }
 
     #[inline]
-    fn from_le_bytes(bytes: &[u8; N]) -> Self {
-        Self::from_le_bytes(*bytes)
+    fn from_le_bytes(bytes: &ByteArray<N>) -> Self {
+        Self::from_le_bytes(bytes.0)
     }
 }
 
 impl<const S: bool, const N: usize, const OM: u8> ToBytes for Integer<S, N, 0, OM> {
-    type Bytes = [u8; N];
+    type Bytes = ByteArray<N>;
 
     #[inline]
-    fn to_be_bytes(self) -> [u8; N] {
-        Self::to_be_bytes(self)
+    fn to_be_bytes(self) -> ByteArray<N> {
+        ByteArray(Self::to_be_bytes(self))
     }
 
     #[inline]
-    fn to_le_bytes(self) -> [u8; N] {
-        Self::to_le_bytes(self)
+    fn to_le_bytes(self) -> ByteArray<N> {
+        ByteArray(Self::to_le_bytes(self))
     }
 }
 
@@ -709,9 +742,9 @@ impl<const N: usize, const B: usize, const OM: u8> Signed for Int<N, B, OM> {
 }
 
 impl<const N: usize, const OM: u8> ToBytes for &Uint<N, 0, OM> {
-    type Bytes = [u8; N];
-    fn to_be_bytes(self) -> [u8; N] { (*self).to_be_bytes() }
-    fn to_le_bytes(self) -> [u8; N] { (*self).to_le_bytes() }
+    type Bytes = ByteArray<N>;
+    fn to_be_bytes(self) -> ByteArray<N> { ByteArray((*self).to_be_bytes()) }
+    fn to_le_bytes(self) -> ByteArray<N> { ByteArray((*self).to_le_bytes()) }
 }
 
 // ---- const-num-traits extended impls ----------------------------------------

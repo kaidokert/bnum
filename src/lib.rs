@@ -51,6 +51,8 @@ type Byte = u8;
 
 pub use integer::{Int, Integer, Uint};
 pub use overflow::OverflowMode;
+#[cfg(any(feature = "numtraits", feature = "num-traits-only"))]
+pub use integer::ByteArray;
 
 // #[cfg(feature = "float")]
 // pub use float::Float;

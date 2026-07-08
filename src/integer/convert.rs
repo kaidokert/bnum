@@ -177,8 +177,19 @@ macro_rules! integer_try_from_into_primitive_integer {
     }
 }
 
+// u8 is excluded from the macro: TryFrom<u8> for Integer would conflict with
+// our From<u8> impl below (the blanket From→TryFrom creates a duplicate).
+// The Integer→u8 direction (TryFrom<Integer> for u8) is handled separately.
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> TryFrom<Integer<S, N, B, OM>> for u8 {
+    type Error = TryFromIntError;
+    #[inline]
+    fn try_from(value: Integer<S, N, B, OM>) -> Result<Self, Self::Error> {
+        integer_try_from_integer(value)
+    }
+}
+
 integer_try_from_into_primitive_integer!(
-    u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
+    u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
 );
 
 // impl<
@@ -241,6 +252,15 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> From<bool>
     #[inline]
     fn from(small: bool) -> Self {
         Self::cast_from(small)
+    }
+}
+
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> From<u8>
+    for Integer<S, N, B, OM>
+{
+    #[inline]
+    fn from(val: u8) -> Self {
+        Self::from_byte(val)
     }
 }
 
