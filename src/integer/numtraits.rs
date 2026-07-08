@@ -2,11 +2,17 @@ use super::{Integer, Uint};
 
 use crate::Exponent;
 use crate::Int;
+#[cfg(feature = "numtraits")]
 use num_integer::{Roots, Integer as IntegerTrait};
 
 use crate::cast::CastFrom;
 
 use num_traits::ops::overflowing::{OverflowingAdd, OverflowingMul, OverflowingSub};
+use num_traits::ops::carrying::{BorrowingSub, CarryingMul};
+use num_traits::ops::parity::Parity;
+use num_traits::ops::byte_slice::{ByteSliceError, ByteSliceErrorKind, FromByteSlice};
+use num_traits::personality::HasPersonality;
+use num_traits::Nct;
 use num_traits::{
     AsPrimitive, Bounded, CheckedAdd, CheckedDiv, CheckedEuclid, CheckedMul, CheckedNeg,
     CheckedRem, CheckedShl, CheckedShr, CheckedSub, ConstOne, ConstZero, Euclid, FromBytes,
@@ -399,6 +405,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> FromPrimitive 
     from_primitive_float!(from_f64, f64, S);
 }
 
+#[cfg(feature = "numtraits")]
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> IntegerTrait for Integer<S, N, B, OM> {
     #[inline]
     fn div_floor(&self, other: &Self) -> Self {
@@ -634,6 +641,7 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     }
 }
 
+#[cfg(feature = "numtraits")]
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Roots for Integer<S, N, B, OM> {
     #[inline]
     fn sqrt(&self) -> Self {
@@ -700,7 +708,78 @@ impl<const N: usize, const B: usize, const OM: u8> Signed for Int<N, B, OM> {
     }
 }
 
-#[cfg(test)]
+impl<const N: usize, const OM: u8> ToBytes for &Uint<N, 0, OM> {
+    type Bytes = [u8; N];
+    fn to_be_bytes(self) -> [u8; N] { (*self).to_be_bytes() }
+    fn to_le_bytes(self) -> [u8; N] { (*self).to_le_bytes() }
+}
+
+// ---- const-num-traits extended impls ----------------------------------------
+
+impl<const N: usize, const B: usize, const OM: u8> Parity for Uint<N, B, OM> {
+    fn is_odd(self) -> bool {
+        if N == 0 { return false; }
+        self.to_bytes()[0] & 1 == 1
+    }
+    fn is_even(self) -> bool { !self.is_odd() }
+}
+
+impl<const N: usize, const B: usize, const OM: u8> BorrowingSub for Uint<N, B, OM> {
+    fn borrowing_sub(self, rhs: Self, borrow: bool) -> (Self, bool) {
+        Integer::borrowing_sub(self, rhs, borrow)
+    }
+}
+
+impl<const N: usize, const B: usize, const OM: u8> CarryingMul for Uint<N, B, OM> {
+    type Unsigned = Self;
+    fn carrying_mul(self, rhs: Self, carry: Self) -> (Self, Self) {
+        let (lo, hi) = self.widening_mul(rhs);
+        let (lo, c) = lo.carrying_add(carry, false);
+        let (hi, _) = hi.carrying_add(Self::ZERO, c);
+        (lo, hi)
+    }
+    fn carrying_mul_add(self, rhs: Self, carry: Self, add: Self) -> (Self, Self) {
+        let (lo, hi) = self.widening_mul(rhs);
+        let (lo, c1) = lo.carrying_add(carry, false);
+        let (lo, c2) = lo.carrying_add(add, false);
+        let (hi, _) = hi.carrying_add(Self::ZERO, c1 || c2);
+        (lo, hi)
+    }
+}
+
+impl<const N: usize, const B: usize, const OM: u8> HasPersonality for Uint<N, B, OM> {
+    type P = Nct;
+}
+
+impl<const N: usize, const OM: u8> FromByteSlice for Uint<N, 0, OM> {
+    fn from_be_slice(bytes: &[u8]) -> Result<Self, ByteSliceError> {
+        if bytes.is_empty() {
+            return Err(ByteSliceError { kind: ByteSliceErrorKind::Empty });
+        }
+        if bytes.len() > N {
+            return Err(ByteSliceError { kind: ByteSliceErrorKind::Overflow });
+        }
+        let mut buf = [0u8; N];
+        let pad = N - bytes.len();
+        let mut i = 0;
+        while i < bytes.len() { buf[pad + i] = bytes[i]; i += 1; }
+        Ok(Self::from_be_bytes(buf))
+    }
+    fn from_le_slice(bytes: &[u8]) -> Result<Self, ByteSliceError> {
+        if bytes.is_empty() {
+            return Err(ByteSliceError { kind: ByteSliceErrorKind::Empty });
+        }
+        if bytes.len() > N {
+            return Err(ByteSliceError { kind: ByteSliceErrorKind::Overflow });
+        }
+        let mut buf = [0u8; N];
+        let mut i = 0;
+        while i < bytes.len() { buf[i] = bytes[i]; i += 1; }
+        Ok(Self::from_le_bytes(buf))
+    }
+}
+
+#[cfg(all(test, feature = "numtraits"))]
 mod tests {
     macro_rules! test_to_primitive {
         ($($prim: ty), *) => {

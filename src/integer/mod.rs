@@ -11,7 +11,7 @@ mod div;
 mod fmt;
 mod math;
 mod mul;
-#[cfg(feature = "numtraits")]
+#[cfg(any(feature = "numtraits", feature = "num-traits-only"))]
 mod numtraits;
 #[cfg(feature = "cios")]
 mod cios;
@@ -100,6 +100,50 @@ pub type Int<const N: usize, const B: usize = 0, const OM: u8 = {OverflowMode::D
 
 #[cfg(feature = "zeroize")]
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> zeroize::DefaultIsZeroes for Integer<S, N, B, OM> {}
+
+#[cfg(feature = "subtle")]
+impl<const N: usize, const B: usize, const OM: u8> subtle::ConditionallySelectable for Uint<N, B, OM> {
+    fn conditional_select(a: &Self, b: &Self, choice: subtle::Choice) -> Self {
+        let mut bytes = a.to_bytes();
+        let b_bytes = b.to_bytes();
+        let mask = if choice.unwrap_u8() != 0 { 0xFFu8 } else { 0u8 };
+        let mut i = 0;
+        while i < N { bytes[i] = (bytes[i] & !mask) | (b_bytes[i] & mask); i += 1; }
+        Self::from_bytes(bytes)
+    }
+}
+
+#[cfg(feature = "subtle")]
+impl<const N: usize, const B: usize, const OM: u8> subtle::ConstantTimeEq for Uint<N, B, OM> {
+    fn ct_eq(&self, other: &Self) -> subtle::Choice {
+        let a = self.to_bytes();
+        let b = other.to_bytes();
+        let mut diff = 0u8;
+        let mut i = 0;
+        while i < N { diff |= a[i] ^ b[i]; i += 1; }
+        subtle::Choice::from((diff == 0) as u8)
+    }
+}
+
+#[cfg(feature = "subtle")]
+impl<const N: usize, const B: usize, const OM: u8> subtle::ConstantTimeGreater for Uint<N, B, OM> {
+    fn ct_gt(&self, other: &Self) -> subtle::Choice {
+        let a = self.to_bytes();
+        let b = other.to_bytes();
+        let mut gt = 0u8;
+        let mut lt = 0u8;
+        let mut i = N;
+        while i > 0 {
+            i -= 1;
+            gt |= ((b[i].wrapping_sub(a[i]) >> 7) & !(gt | lt));
+            lt |= ((a[i].wrapping_sub(b[i]) >> 7) & !(gt | lt));
+        }
+        subtle::Choice::from(gt)
+    }
+}
+
+#[cfg(feature = "subtle")]
+impl<const N: usize, const B: usize, const OM: u8> subtle::ConstantTimeLess for Uint<N, B, OM> {}
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, B, OM> {
     pub(crate) const LAST_BYTE_BITS: u32 = if Self::BITS % Byte::BITS == 0 {
