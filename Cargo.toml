@@ -24,7 +24,7 @@ numtraits = ["dep:num-integer", "dep:num-traits"]
 num-traits-only = ["dep:num-traits"]
 cios = ["dep:modmath-cios", "num-traits-only"]
 zeroize = ["dep:zeroize"]
-subtle = ["dep:subtle", "zeroize"]
+subtle = ["dep:subtle", "zeroize", "num-traits?/ct"]
 borsh = ["dep:borsh", "alloc"]
 
 [dependencies]

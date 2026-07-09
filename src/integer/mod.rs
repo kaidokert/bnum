@@ -137,8 +137,13 @@ impl<const N: usize, const B: usize, const OM: u8> subtle::ConstantTimeGreater f
         let mut i = N;
         while i > 0 {
             i -= 1;
-            gt |= ((b[i].wrapping_sub(a[i]) >> 7) & !(gt | lt));
-            lt |= ((a[i].wrapping_sub(b[i]) >> 7) & !(gt | lt));
+            // Use u16 subtraction so the borrow bit (bit 15) correctly
+            // captures "b[i] < a[i]" for all unsigned byte values.
+            // u8 subtraction >> 7 fails when a[i] - b[i] > 128 (the
+            // wrapping result lands in [0,127], clearing bit 7 even
+            // though a borrow occurred).
+            gt |= (((b[i] as u16).wrapping_sub(a[i] as u16) >> 15) as u8) & !(gt | lt);
+            lt |= (((a[i] as u16).wrapping_sub(b[i] as u16) >> 15) as u8) & !(gt | lt);
         }
         subtle::Choice::from(gt)
     }
@@ -146,6 +151,14 @@ impl<const N: usize, const B: usize, const OM: u8> subtle::ConstantTimeGreater f
 
 #[cfg(feature = "subtle")]
 impl<const N: usize, const B: usize, const OM: u8> subtle::ConstantTimeLess for Uint<N, B, OM> {}
+
+#[cfg(all(feature = "subtle", any(feature = "numtraits", feature = "num-traits-only")))]
+impl<const N: usize, const B: usize, const OM: u8> num_traits::ops::ct::CtIsZero for Uint<N, B, OM> {
+    fn ct_is_zero(&self) -> subtle::Choice {
+        use subtle::ConstantTimeEq;
+        self.ct_eq(&Self::ZERO)
+    }
+}
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, B, OM> {
     pub(crate) const LAST_BYTE_BITS: u32 = if Self::BITS % Byte::BITS == 0 {
