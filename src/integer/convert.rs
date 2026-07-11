@@ -178,8 +178,35 @@ macro_rules! integer_try_from_into_primitive_integer {
 }
 
 integer_try_from_into_primitive_integer!(
-    u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
+    u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
 );
+
+// u8 is split out: Integer → u8 stays TryFrom (can fail), but u8 → Uint is
+// always infallible so it uses From (gives TryFrom via core's blanket with
+// Infallible error), while u8 → Int stays TryFrom (200 > i8::MAX etc.).
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> TryFrom<Integer<S, N, B, OM>>
+    for u8
+{
+    type Error = TryFromIntError;
+    #[inline]
+    fn try_from(value: Integer<S, N, B, OM>) -> Result<Self, Self::Error> {
+        integer_try_from_integer(value)
+    }
+}
+impl<const N: usize, const B: usize, const OM: u8> TryFrom<u8> for Int<N, B, OM> {
+    type Error = TryFromIntError;
+    #[inline]
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        integer_try_from_integer(value)
+    }
+}
+impl<const N: usize, const B: usize, const OM: u8> From<u8> for Uint<N, B, OM> {
+    #[inline]
+    fn from(value: u8) -> Self {
+        use crate::cast::CastFrom;
+        Self::cast_from(value)
+    }
+}
 
 // impl<
 //     const S: bool,
@@ -299,8 +326,8 @@ mod tests {
 #[cfg(test)]
 mod double_custom_bit_width_convert_tests {
     use crate::Integer;
-    use crate::test::BitInt;
     use crate::literal_parse::get_size_params_from_bits;
+    use crate::test::BitInt;
 
     macro_rules! test_double_custom_bit_width_convert {
         ($($from: literal => $to: literal), *) => {

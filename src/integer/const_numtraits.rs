@@ -47,8 +47,8 @@ impl<const N: usize, const B: usize, const OM: u8> const_num_traits::HasPersonal
 
 // ── Wrapping arithmetic ───────────────────────────────────────────────────────
 
-impl<const N: usize, const B: usize, const OM: u8>
-    const_num_traits::ops::wrapping::WrappingAdd for Uint<N, B, OM>
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ops::wrapping::WrappingAdd
+    for Uint<N, B, OM>
 {
     type Output = Self;
     fn wrapping_add(self, v: Self) -> Self {
@@ -56,8 +56,8 @@ impl<const N: usize, const B: usize, const OM: u8>
     }
 }
 
-impl<const N: usize, const B: usize, const OM: u8>
-    const_num_traits::ops::wrapping::WrappingSub for Uint<N, B, OM>
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ops::wrapping::WrappingSub
+    for Uint<N, B, OM>
 {
     type Output = Self;
     fn wrapping_sub(self, v: Self) -> Self {
@@ -65,8 +65,8 @@ impl<const N: usize, const B: usize, const OM: u8>
     }
 }
 
-impl<const N: usize, const B: usize, const OM: u8>
-    const_num_traits::ops::wrapping::WrappingMul for Uint<N, B, OM>
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ops::wrapping::WrappingMul
+    for Uint<N, B, OM>
 {
     type Output = Self;
     fn wrapping_mul(self, v: Self) -> Self {
@@ -87,8 +87,8 @@ impl<const N: usize, const B: usize, const OM: u8>
 
 // ── Carrying / borrowing arithmetic ──────────────────────────────────────────
 
-impl<const N: usize, const B: usize, const OM: u8>
-    const_num_traits::BorrowingSub for Uint<N, B, OM>
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::BorrowingSub
+    for Uint<N, B, OM>
 {
     type Output = Self;
     fn borrowing_sub(self, rhs: Self, borrow: bool) -> (Self, bool) {
@@ -96,8 +96,8 @@ impl<const N: usize, const B: usize, const OM: u8>
     }
 }
 
-impl<const N: usize, const B: usize, const OM: u8>
-    const_num_traits::CarryingMul for Uint<N, B, OM>
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::CarryingMul
+    for Uint<N, B, OM>
 {
     type Unsigned = Self;
     type Output = Self;
@@ -124,9 +124,7 @@ impl<const N: usize, const B: usize, const OM: u8> const_num_traits::Parity for 
 
 // ── ConstZero / ConstOne (required by PrimBits) ───────────────────────────────
 
-impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ConstZero
-    for Uint<N, B, OM>
-{
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ConstZero for Uint<N, B, OM> {
     const ZERO: Self = Self::ZERO;
 }
 
@@ -188,11 +186,77 @@ impl<const N: usize, const B: usize, const OM: u8> const_num_traits::PrimBits fo
     }
 }
 
+// ── BytesHolder ───────────────────────────────────────────────────────────────
+//
+// Newtype over [u8; N] that implements Default for all N (unlike [u8; N] which
+// only has Default for N ≤ 32). rsa_heapless 0.4 FixedWidthUnsignedInt requires
+// `type Bytes: NumBytes + Default + AsMut<[u8]>`.
+
+#[derive(Clone, Copy)]
+pub struct BytesHolder<const N: usize>(pub(crate) [u8; N]);
+
+impl<const N: usize> Default for BytesHolder<N> {
+    fn default() -> Self {
+        Self([0u8; N])
+    }
+}
+impl<const N: usize> AsRef<[u8]> for BytesHolder<N> {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+impl<const N: usize> AsMut<[u8]> for BytesHolder<N> {
+    fn as_mut(&mut self) -> &mut [u8] {
+        &mut self.0
+    }
+}
+impl<const N: usize> core::borrow::Borrow<[u8]> for BytesHolder<N> {
+    fn borrow(&self) -> &[u8] {
+        &self.0
+    }
+}
+impl<const N: usize> core::borrow::BorrowMut<[u8]> for BytesHolder<N> {
+    fn borrow_mut(&mut self) -> &mut [u8] {
+        &mut self.0
+    }
+}
+impl<const N: usize> PartialEq for BytesHolder<N> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+impl<const N: usize> Eq for BytesHolder<N> {}
+impl<const N: usize> PartialOrd for BytesHolder<N> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl<const N: usize> Ord for BytesHolder<N> {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        self.0.cmp(&other.0)
+    }
+}
+impl<const N: usize> core::hash::Hash for BytesHolder<N> {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+    }
+}
+impl<const N: usize> core::fmt::Debug for BytesHolder<N> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "BytesHolder(")?;
+        for b in &self.0 {
+            write!(f, "{b:02x}")?;
+        }
+        write!(f, ")")
+    }
+}
+
 // ── ToBytes / FromBytes ───────────────────────────────────────────────────────
 //
-// type Bytes = [u8; N] — bnum stores bytes internally as [u8; N] (LE order).
-// Both ToBytes and FromBytes use the same type so rsa_heapless's
-// `NumToBytes<Bytes = <T as NumFromBytes>::Bytes>` constraint is satisfied.
+// type Bytes = BytesHolder<N> — bnum stores bytes internally as [u8; N] (LE order).
+// BytesHolder wraps [u8; N] with Default for all N so FixedWidthUnsignedInt
+// compiles for N = 128/256 (RSA-1024/2048). ToBytes::Bytes == FromBytes::Bytes
+// satisfies rsa_heapless's NumToBytes<Bytes = <T as NumFromBytes>::Bytes> bound.
 
 // bnum stores bytes LE internally (index 0 = LSB). to_bytes() returns the raw
 // [u8; N] in that LE layout; we reverse for BE without calling the B=0-only
@@ -203,47 +267,45 @@ fn reverse_bytes<const N: usize>(mut arr: [u8; N]) -> [u8; N] {
     let mut i = 0;
     while i < N / 2 {
         let j = N - 1 - i;
-        let tmp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = tmp;
+        arr.swap(i, j);
         i += 1;
     }
     arr
 }
 
 impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ToBytes for Uint<N, B, OM> {
-    type Bytes = [u8; N];
+    type Bytes = BytesHolder<N>;
 
-    fn to_be_bytes(self) -> [u8; N] {
-        reverse_bytes(Integer::to_bytes(self))
+    fn to_be_bytes(self) -> BytesHolder<N> {
+        BytesHolder(reverse_bytes(Integer::to_bytes(self)))
     }
 
-    fn to_le_bytes(self) -> [u8; N] {
-        Integer::to_bytes(self)
+    fn to_le_bytes(self) -> BytesHolder<N> {
+        BytesHolder(Integer::to_bytes(self))
     }
 }
 
 impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ToBytes for &Uint<N, B, OM> {
-    type Bytes = [u8; N];
+    type Bytes = BytesHolder<N>;
 
-    fn to_be_bytes(self) -> [u8; N] {
-        reverse_bytes(Integer::to_bytes(*self))
+    fn to_be_bytes(self) -> BytesHolder<N> {
+        BytesHolder(reverse_bytes(Integer::to_bytes(*self)))
     }
 
-    fn to_le_bytes(self) -> [u8; N] {
-        Integer::to_bytes(*self)
+    fn to_le_bytes(self) -> BytesHolder<N> {
+        BytesHolder(Integer::to_bytes(*self))
     }
 }
 
 impl<const N: usize, const B: usize, const OM: u8> const_num_traits::FromBytes for Uint<N, B, OM> {
-    type Bytes = [u8; N];
+    type Bytes = BytesHolder<N>;
 
-    fn from_be_bytes(bytes: &[u8; N]) -> Self {
-        Uint::from_bytes(reverse_bytes(*bytes))
+    fn from_be_bytes(bytes: &BytesHolder<N>) -> Self {
+        Uint::from_bytes(reverse_bytes(bytes.0))
     }
 
-    fn from_le_bytes(bytes: &[u8; N]) -> Self {
-        Uint::from_bytes(*bytes)
+    fn from_le_bytes(bytes: &BytesHolder<N>) -> Self {
+        Uint::from_bytes(bytes.0)
     }
 }
 
@@ -296,8 +358,8 @@ impl<const N: usize, const B: usize, const OM: u8> const_num_traits::FromByteSli
 
 // ── &Uint wrapping ops (needed by ed25519 verify for<'a> &'a T bounds) ───────
 
-impl<const N: usize, const B: usize, const OM: u8>
-    const_num_traits::ops::wrapping::WrappingAdd for &Uint<N, B, OM>
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ops::wrapping::WrappingAdd
+    for &Uint<N, B, OM>
 {
     type Output = Uint<N, B, OM>;
 
@@ -306,8 +368,8 @@ impl<const N: usize, const B: usize, const OM: u8>
     }
 }
 
-impl<const N: usize, const B: usize, const OM: u8>
-    const_num_traits::ops::wrapping::WrappingSub for &Uint<N, B, OM>
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::ops::wrapping::WrappingSub
+    for &Uint<N, B, OM>
 {
     type Output = Uint<N, B, OM>;
 
@@ -365,9 +427,7 @@ impl<const N: usize, const B: usize, const OM: u8> subtle::ConstantTimeGreater f
 
 impl<const N: usize, const B: usize, const OM: u8> ConstantTimeLess for Uint<N, B, OM> {}
 
-impl<const N: usize, const B: usize, const OM: u8> const_num_traits::CtIsZero
-    for Uint<N, B, OM>
-{
+impl<const N: usize, const B: usize, const OM: u8> const_num_traits::CtIsZero for Uint<N, B, OM> {
     fn ct_is_zero(&self) -> Choice {
         self.ct_eq(&Self::ZERO)
     }
