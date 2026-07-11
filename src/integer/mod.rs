@@ -13,6 +13,8 @@ mod math;
 mod mul;
 #[cfg(feature = "numtraits")]
 mod numtraits;
+mod const_numtraits;
+mod cios;
 mod ops;
 mod overflowing;
 mod radix;
