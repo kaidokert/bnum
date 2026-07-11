@@ -1,5 +1,5 @@
-use crate::{Int, Uint, Integer};
-use core::num::{Wrapping, Saturating};
+use crate::{Int, Integer, Uint};
+use core::num::{Saturating, Wrapping};
 
 pub trait TestConvert {
     type Output;
@@ -84,7 +84,10 @@ test_convert_bigints!(128, 64, 32, 16, 8);
 use crate::literal_parse::get_size_params_from_bits;
 
 impl TestConvert for usize {
-    type Output = Uint<{get_size_params_from_bits(usize::BITS as usize).0}, {get_size_params_from_bits(usize::BITS as usize).1}>;
+    type Output = Uint<
+        { get_size_params_from_bits(usize::BITS as usize).0 },
+        { get_size_params_from_bits(usize::BITS as usize).1 },
+    >;
 
     #[inline]
     fn into(self) -> Self::Output {
@@ -93,7 +96,10 @@ impl TestConvert for usize {
 }
 
 impl TestConvert for isize {
-    type Output = Int<{get_size_params_from_bits(isize::BITS as usize).0}, {get_size_params_from_bits(isize::BITS as usize).1}>;
+    type Output = Int<
+        { get_size_params_from_bits(isize::BITS as usize).0 },
+        { get_size_params_from_bits(isize::BITS as usize).1 },
+    >;
 
     #[inline]
     fn into(self) -> Self::Output {
@@ -101,7 +107,9 @@ impl TestConvert for isize {
     }
 }
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> TestConvert for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> TestConvert
+    for Integer<S, N, B, OM>
+{
     type Output = Self;
 
     #[inline]
@@ -275,11 +283,7 @@ macro_rules! test_convert_to_self {
     };
 }
 
-test_convert_to_self!(
-    core::num::FpCategory,
-    core::cmp::Ordering,
-    bool
-);
+test_convert_to_self!(core::num::FpCategory, core::cmp::Ordering, bool);
 
 #[cfg(feature = "alloc")]
 test_convert_to_self!(alloc::string::String);

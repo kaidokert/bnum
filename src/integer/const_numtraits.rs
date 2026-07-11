@@ -85,6 +85,15 @@ impl<const N: usize, const B: usize, const OM: u8>
     }
 }
 
+impl<const N: usize, const B: usize, const OM: u8>
+    const_num_traits::ops::overflowing::OverflowingSub for Uint<N, B, OM>
+{
+    type Output = Self;
+    fn overflowing_sub(self, v: Self) -> (Self, bool) {
+        Integer::overflowing_sub(self, v)
+    }
+}
+
 // ── Carrying / borrowing arithmetic ──────────────────────────────────────────
 
 impl<const N: usize, const B: usize, const OM: u8> const_num_traits::BorrowingSub
