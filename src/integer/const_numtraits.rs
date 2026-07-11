@@ -250,6 +250,8 @@ impl<const N: usize> core::fmt::Debug for BytesHolder<N> {
         write!(f, ")")
     }
 }
+#[cfg(feature = "zeroize")]
+impl<const N: usize> zeroize::DefaultIsZeroes for BytesHolder<N> {}
 
 // ── ToBytes / FromBytes ───────────────────────────────────────────────────────
 //
