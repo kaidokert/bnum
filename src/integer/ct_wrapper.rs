@@ -271,13 +271,6 @@ impl<U: From<u8>> From<u8> for Ct<U> {
 // ── Zeroize ───────────────────────────────────────────────────────────────────
 
 #[cfg(feature = "zeroize")]
-impl<U: zeroize::Zeroize> zeroize::Zeroize for Ct<U> {
-    fn zeroize(&mut self) {
-        self.0.zeroize();
-    }
-}
-
-#[cfg(feature = "zeroize")]
 impl<U: zeroize::DefaultIsZeroes> zeroize::DefaultIsZeroes for Ct<U> {}
 
 // ── ToBytes / FromBytes ───────────────────────────────────────────────────────
