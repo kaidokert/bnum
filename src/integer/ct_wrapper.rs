@@ -277,6 +277,9 @@ impl<U: zeroize::Zeroize> zeroize::Zeroize for Ct<U> {
     }
 }
 
+#[cfg(feature = "zeroize")]
+impl<U: zeroize::DefaultIsZeroes> zeroize::DefaultIsZeroes for Ct<U> {}
+
 // ── ToBytes / FromBytes ───────────────────────────────────────────────────────
 
 impl<U: ToBytes> ToBytes for Ct<U> {
