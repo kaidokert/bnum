@@ -264,7 +264,7 @@ macro_rules! is_prefix_signed {
     };
     (f) => {
         true
-    }
+    };
 }
 
 pub(crate) use is_prefix_signed;
@@ -362,7 +362,7 @@ macro_rules! test_custom_bit_widths {
                 mod [<bits $bits>] {
                     #[allow(unused_imports)]
                     use super::*;
-                    
+
                     #[allow(non_camel_case_types, unused)]
                     pub type utest = crate::test::BitInt<false, $bits>;
 

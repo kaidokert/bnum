@@ -1,9 +1,7 @@
 //! Panic-free casting between numeric types.
 
-
-
 /// Backend implementation trait for panic-free casting between numeric types.
-/// 
+///
 /// It is generally recommended to use the [`As`] trait for casting instead of this trait.
 pub trait CastFrom<T> {
     #[must_use = crate::doc::must_use_op!()]

@@ -113,8 +113,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
         if Self::LAST_BYTE_PAD_BITS != 0 {
             // if NUM_PAD_BITS = n, want to shift hi by n bits and move the most significant n bits of lo to least significant n bits of hi
             hi = hi.shl(Self::LAST_BYTE_PAD_BITS);
-            let lo_msb = lo
-                .shr(Uint::<N>::BITS - Self::LAST_BYTE_PAD_BITS); // shift by this amount as we are effectively working with a Uint<N, 8 * N>
+            let lo_msb = lo.shr(Uint::<N>::BITS - Self::LAST_BYTE_PAD_BITS); // shift by this amount as we are effectively working with a Uint<N, 8 * N>
             hi = hi.bitor(lo_msb);
             lo.set_sign_bits();
         }

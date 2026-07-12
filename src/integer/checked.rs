@@ -1,8 +1,8 @@
 use super::Uint;
 use crate::Exponent;
-use crate::{Integer, Int};
 use crate::doc;
 use crate::helpers::tuple_to_option;
+use crate::{Int, Integer};
 
 macro_rules! impl_desc {
     () => {
@@ -14,17 +14,13 @@ macro_rules! impl_desc {
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, B, OM> {
     #[inline(always)]
     const fn tuple_to_option(t: (Self, bool)) -> Option<Self> {
-        if t.1 {
-            None
-        } else {
-            Some(t.0)
-        }
+        if t.1 { None } else { Some(t.0) }
     }
 
     /// Checked integer addition. Computes `self + rhs`, returning `None` if overflow occurred.
     ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
     ///
     /// ```
@@ -33,7 +29,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     ///
     /// assert_eq!(n!(1U1024).checked_add(n!(1)), Some(n!(2)));
     /// assert_eq!(U1024::MAX.checked_add(n!(1)), None);
-    /// 
+    ///
     /// assert_eq!(n!(1I1024).checked_add(n!(-1)), Some(n!(0)));
     /// assert_eq!(I1024::MIN.checked_add(n!(-1)), None);
     /// ```
@@ -44,18 +40,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked integer subtraction. Computes `self - rhs`, returning `None` if overflow occurred.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U256, I256};
-    /// 
+    ///
     /// assert_eq!(n!(1U256).checked_sub(n!(1)), Some(n!(0)));
     /// assert_eq!(U256::MIN.checked_sub(n!(1)), None);
-    /// 
+    ///
     /// assert_eq!(n!(-1I256).checked_sub(n!(1)), Some(n!(-2)));
     /// assert_eq!(I256::MAX.checked_sub(n!(-1)), None);
     /// ```
@@ -66,18 +62,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked integer multiplication. Computes `self * rhs`, returning `None` if overflow occurred.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U512, I512};
-    /// 
+    ///
     /// assert_eq!(n!(1U512).checked_mul(n!(1)), Some(n!(1)));
     /// assert_eq!(U512::MAX.checked_mul(n!(3)), None);
-    /// 
+    ///
     /// assert_eq!(n!(2I512).checked_mul(n!(3)), Some(n!(6)));
     /// assert_eq!(I512::MIN.checked_mul(n!(-1)), None);
     /// ```
@@ -88,18 +84,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked integer division. Computes `self / rhs`, returning `None` if `rhs` is zero, or if the division would overflow (this is only possible for signed integers).
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U256, I256};
-    /// 
+    ///
     /// assert_eq!(n!(5U256).checked_div(n!(2)), Some(n!(2)));
     /// assert_eq!(n!(1U256).checked_div(n!(0)), None);
-    /// 
+    ///
     /// assert_eq!(n!(-13I256).checked_div(n!(5)), Some(n!(-2)));
     /// assert_eq!(I256::MIN.checked_div(n!(-1)), None);
     /// ```
@@ -114,20 +110,20 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked Euclidean division. Computes `self.div_euclid(rhs)`, returning `None` if `rhs` is zero or if the division would overflow (this is only possible for signed integers).
-    /// 
+    ///
     /// For unsigned integers, this is equivalent to `self.checked_div(rhs)`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U2048, I2048};
-    /// 
+    ///
     /// assert_eq!(n!(13U2048).checked_div_euclid(n!(5)), Some(n!(2)));
     /// assert_eq!(U2048::MAX.checked_div_euclid(n!(0)), None);
-    /// 
+    ///
     /// assert_eq!(n!(-13I2048).checked_div_euclid(n!(5)), Some(n!(-3)));
     /// assert_eq!(I2048::MIN.checked_div_euclid(n!(-1)), None);
     /// ```
@@ -142,18 +138,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked integer remainder. Computes `self % rhs`, returning `None` if `rhs` is zero or if computing the remainder would result in overflow (this is only possible for signed integers).
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U1024, I1024};
-    /// 
+    ///
     /// assert_eq!(n!(5U1024).checked_rem(n!(2)), Some(n!(1)));
     /// assert_eq!(n!(1U1024).checked_rem(n!(0)), None);
-    /// 
+    ///
     /// assert_eq!(n!(-13I1024).checked_rem(n!(5)), Some(n!(-3)));
     /// assert_eq!(I1024::MIN.checked_rem(n!(-1)), None);
     /// ```
@@ -170,18 +166,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// Checked Euclidean remainder. Computes `self.rem_euclid(rhs)`, returning `None` if `rhs` is zero or if computing the remainder would result in overflow (this is only possible for signed integers).
     ///
     /// For unsigned integers, this is equivalent to `self.checked_rem(rhs)`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U512, I512};
-    /// 
+    ///
     /// assert_eq!(n!(13U512).checked_rem_euclid(n!(5)), Some(n!(3)));
     /// assert_eq!(U512::MAX.checked_rem_euclid(n!(0)), None);
-    /// 
+    ///
     /// assert_eq!(n!(-13I512).checked_rem_euclid(n!(5)), Some(n!(2)));
     /// assert_eq!(I512::MIN.checked_rem_euclid(n!(-1)), None);
     /// ```
@@ -196,20 +192,20 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked negation. Computes `-self`, returning `None` if overflow occurred.
-    /// 
+    ///
     /// For unsigned integers, overflow occurs if `self` is non-zero. For signed integers, overflow occurs if `self` is equal to [`Self::MIN`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U256, I256};
-    /// 
+    ///
     /// assert_eq!(n!(1U256).checked_neg(), None);
     /// assert_eq!(n!(0U256).checked_neg(), Some(n!(0)));
-    /// 
+    ///
     /// assert_eq!(n!(1I256).checked_neg(), Some(n!(-1)));
     /// assert_eq!(I256::MIN.checked_neg(), None);
     /// ```
@@ -224,19 +220,19 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked left shift. Computes `self << rhs`, returning `None` if `rhs` is greater than or equal to `Self::BITS`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U2048, I2048};
-    /// 
+    ///
     /// assert_eq!(n!(1U2048).checked_shl(1), Some(n!(2)));
     /// assert_eq!(n!(1U2048).checked_shl(2048), None);
     /// assert_eq!(n!(2U2048).checked_shl(2047), Some(n!(0)));
-    /// 
+    ///
     /// assert_eq!(n!(-1I2048).checked_shl(2), Some(n!(-4)));
     /// assert_eq!(n!(-1I2048).checked_shl(2048), None);
     /// assert_eq!(n!(-1).checked_shl(2047), Some(I2048::MIN));
@@ -248,7 +244,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked right shift. Computes `self >> rhs`, returning `None` if `rhs` is greater than or equal to `Self::BITS`.
-    /// 
+    ///
     /// # Examples
     ///
     /// Basic usage:
@@ -260,7 +256,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// assert_eq!(n!(1U1024).checked_shr(1), Some(n!(0)));
     /// assert_eq!(U1024::MAX.checked_shr(1024), None);
     /// assert_eq!(U1024::MAX.checked_shr(1023), Some(n!(1)));
-    /// 
+    ///
     /// assert_eq!(n!(-1I1024).checked_shr(1), Some(n!(-1)));
     /// assert_eq!(I1024::MIN.checked_shr(1024), None);
     /// assert_eq!(I1024::MIN.checked_shr(I1024::BITS - 1), Some(n!(-1)));
@@ -272,18 +268,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Checked exponentiation. Computes `self.pow(exp)`, returning `None` if overflow occurred.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U512, I512};
-    /// 
+    ///
     /// assert_eq!(n!(2U512).checked_pow(10), Some(n!(1024)));
     /// assert_eq!(n!(2U512).checked_pow(512), None);
-    /// 
+    ///
     /// assert_eq!(n!(-2I512).checked_pow(3), Some(n!(-8)));
     /// assert_eq!(n!(-2).checked_pow(511), Some(I512::MIN));
     /// assert_eq!(n!(2I512).checked_pow(512), None);
@@ -297,10 +293,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
                     let out = u.force_sign();
                     let neg = self.is_negative_internal();
                     if !neg || exp % 2 == 0 {
-                        if out.is_negative_internal() { None } else { Some(out) }
+                        if out.is_negative_internal() {
+                            None
+                        } else {
+                            Some(out)
+                        }
                     } else {
                         let out = out.wrapping_neg();
-                        if !out.is_negative_internal() { None } else { Some(out) }
+                        if !out.is_negative_internal() {
+                            None
+                        } else {
+                            Some(out)
+                        }
                     }
                 }
                 None => None,
@@ -328,23 +332,23 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// If `rhs` is positive, computes the smallest integer multiple of `rhs` that is greater than or equal to `self`. If `rhs` is negative, computes the largest integer multiple of `rhs` that is less than or equal to `self`.
-    /// 
+    ///
     /// Returns `None` if `rhs` is zero, or if the result is too large or too small to be represented by `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U256, I256};
-    /// 
+    ///
     /// assert_eq!(n!(4U256).checked_next_multiple_of(n!(2)), Some(n!(4)));
     /// assert_eq!(n!(17U256).checked_next_multiple_of(n!(7)), Some(n!(21)));
     /// assert_eq!(n!(1U256).checked_next_multiple_of(n!(0)), None);
     /// assert_eq!(U256::MAX.checked_next_multiple_of(n!(2)), None);
     /// assert_eq!(U256::MAX.checked_next_multiple_of(n!(1)), Some(U256::MAX));
-    /// 
+    ///
     /// assert_eq!(n!(-9I256).checked_next_multiple_of(n!(-3)), Some(n!(-9)));
     /// assert_eq!(n!(-10I256).checked_next_multiple_of(n!(4)), Some(n!(-8)));
     /// assert_eq!(n!(-17I256).checked_next_multiple_of(n!(-4)), Some(n!(-20)));
@@ -370,21 +374,21 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Computes base-2 logarithm of `self`, rounded down, i.e. the largest integer `n` such that `2^n <= self`.
-    /// 
+    ///
     /// Returns `None` if `self` is less than or equal to zero.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U2048, I2048};
-    /// 
+    ///
     /// assert_eq!(n!(1U2048).checked_ilog2(), Some(0));
     /// assert_eq!(U2048::MAX.checked_ilog2(), Some(2047));
     /// assert_eq!(n!(0U2048).checked_ilog2(), None);
-    /// 
+    ///
     /// assert_eq!(I2048::MAX.checked_ilog2(), Some(2046));
     /// assert_eq!(n!(-1I2048).checked_ilog2(), None);
     /// ```
@@ -399,20 +403,20 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Computes base-10 logarithm of `self`, rounded down, i.e. the largest integer `n` such that `10^n <= self`.
-    /// 
+    ///
     /// Returns `None` if `self` is less than or equal to zero.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(1U1024).checked_ilog10(), Some(0));
     /// assert_eq!(n!(1000U1024).checked_ilog10(), Some(3));
     /// assert_eq!(n!(0U1024).checked_ilog10(), None);
-    /// 
+    ///
     /// assert_eq!(n!(100I1024).checked_ilog10(), Some(2));
     /// assert_eq!(n!(-1I1024).checked_ilog10(), None);
     /// ```
@@ -429,27 +433,34 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
         if const { Self::from_byte(10) }.gt(&self) {
             return Some(0);
         }
-        Some(Uint::iilog(1, const { Uint::from_byte(10) }, self.force_sign().div_rem_u64(10).0).0)
+        Some(
+            Uint::iilog(
+                1,
+                const { Uint::from_byte(10) },
+                self.force_sign().div_rem_u64(10).0,
+            )
+            .0,
+        )
     }
 
     /// Computes logarithm of `self` to the given `base`, rounded down, i.e. the largest integer `n` such that `base^n <= self`.
-    /// 
+    ///
     /// Returns `None` if `self` is less than or equal to zero, or if `base` is less than 2.
-    /// 
+    ///
     /// Note that you should use `checked_ilog2` or `checked_ilog10` for base-2 or base-10 logarithms, respectively, as they are more efficient.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U512, I512};
-    /// 
+    ///
     /// assert_eq!(n!(9U512).checked_ilog(n!(3)), Some(2));
     /// assert_eq!(n!(1U512).checked_ilog(n!(1)), None);
     /// assert_eq!(n!(0U512).checked_ilog(n!(0)), None);
-    /// 
+    ///
     /// assert_eq!(n!(65I512).checked_ilog(n!(4)), Some(3));
     /// assert_eq!(n!(2I512).checked_ilog(n!(-1)), None);
     /// assert_eq!(I512::MIN.checked_ilog(n!(2)), None);
@@ -500,15 +511,15 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     }
 
     /// Checked addition with a signed integer of the same bit width. Computes `self + rhs`, returning `None` if overflow occurred.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::U512;
-    /// 
+    ///
     /// assert_eq!(n!(1U512).checked_add_signed(n!(1)), Some(n!(2)));
     /// assert_eq!(U512::MAX.checked_add_signed(n!(1)), None);
     /// assert_eq!(n!(1U512).checked_add_signed(n!(-2)), None);
@@ -520,15 +531,15 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     }
 
     /// Checked subtraction by a signed integer of the same bit width. Computes `self - rhs`, returning `None` if overflow occurred.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::U2048;
-    /// 
+    ///
     /// assert_eq!(n!(1U2048).checked_sub_signed(n!(-1)), Some(n!(2)));
     /// assert_eq!(U2048::MAX.checked_sub_signed(n!(-1)), None);
     /// assert_eq!(n!(1U2048).checked_sub_signed(n!(2)), None);
@@ -540,15 +551,15 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     }
 
     /// Checked integer subtraction. Computes `self - rhs`, returning `None` if the result cannot be represented by an `Int<N, B, OM>`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::U1024;
-    /// 
+    ///
     /// assert_eq!(n!(1U1024).checked_signed_diff(n!(2)), Some(n!(-1)));
     /// assert_eq!(U1024::MAX.checked_signed_diff(n!(1)), None);
     /// assert_eq!(n!(2U1024).checked_signed_diff(n!(1)), Some(n!(1)));
@@ -566,15 +577,15 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     }
 
     /// Computes the smallest power of two that is greater than or equal to `self`. Returns `None` if the result is too large to be represented by `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::U256;
-    /// 
+    ///
     /// assert_eq!(n!(16U256).checked_next_power_of_two(), Some(n!(16)));
     /// assert_eq!(n!(17U256).checked_next_power_of_two(), Some(n!(32)));
     /// assert_eq!(U256::MAX.checked_next_power_of_two(), None);
@@ -596,15 +607,15 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
 #[doc = concat!("(Signed integers only.) ", impl_desc!())]
 impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     /// Checked addition with an unsigned integer of the same bit width. Computes `self + rhs`, returning `None` if overflow occurred.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{I512, U512};
-    /// 
+    ///
     /// assert_eq!(n!(-1I512).checked_add_unsigned(n!(1)), Some(n!(0)));
     /// assert_eq!(I512::MIN.checked_add_unsigned(U512::MAX), Some(I512::MAX));
     /// assert_eq!(n!(0I512).checked_add_unsigned(U512::MAX), None);
@@ -616,15 +627,15 @@ impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     }
 
     /// Checked subtraction by an unsigned integer of the same bit width. Computes `self - rhs`, returning `None` if overflow occurred.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{I1024, U1024};
-    /// 
+    ///
     /// assert_eq!(n!(-1I1024).checked_sub_unsigned(n!(1)), Some(n!(-2)));
     /// assert_eq!(n!(0I1024).checked_sub_unsigned(U1024::MAX), None);
     /// assert_eq!(I1024::MAX.checked_sub_unsigned(U1024::MAX), Some(I1024::MIN));
@@ -636,15 +647,15 @@ impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     }
 
     /// Checked absolute value. Computes the absolute value of `self`, returning `None` if `self` is equal to [`Self::MIN`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::I2048;
-    /// 
+    ///
     /// assert_eq!(n!(-123I2048).checked_abs(), Some(n!(123)));
     /// assert_eq!(n!(456I2048).checked_abs(), Some(n!(456)));
     /// assert_eq!(I2048::MIN.checked_abs(), None);
@@ -754,7 +765,7 @@ mod tests {
 
     crate::test::test_all! {
         testing signed;
-        
+
         test_bignum! {
             function: <itest>::checked_add_unsigned(a: itest, b: utest)
         }

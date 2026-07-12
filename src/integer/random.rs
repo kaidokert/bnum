@@ -11,16 +11,19 @@ Copyright 2017 The Rust Project Developers.
 
 use crate::Integer;
 use crate::Uint;
+use crate::cast::As;
+use crate::random::UniformInt;
 use rand::distr::uniform::{SampleBorrow, SampleUniform, UniformSampler};
 use rand::distr::{Distribution, StandardUniform};
 use rand::{Fill, Rng, RngExt};
-use crate::random::UniformInt;
-use crate::cast::As;
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> Distribution<Integer<S, N, B, OM>> for StandardUniform {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> Distribution<Integer<S, N, B, OM>>
+    for StandardUniform
+{
     #[inline]
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Integer<S, N, B, OM> {
-        if Integer::<S, N, B, OM>::BITS <= 32 { // because rand uses u32 to generate <= 32-bit integers
+        if Integer::<S, N, B, OM>::BITS <= 32 {
+            // because rand uses u32 to generate <= 32-bit integers
             return rng.next_u32().as_::<Uint<N, B, OM>>().force_sign();
         }
         let mut out = Integer::ZERO;
@@ -47,7 +50,9 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Fill for Integ
     }
 }
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> SampleUniform for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> SampleUniform
+    for Integer<S, N, B, OM>
+{
     type Sampler = UniformInt<Self>;
 }
 
@@ -57,7 +62,9 @@ const fn widening_mul_u32(a: u32, b: u32) -> (u32, u32) {
     (m as u32, (m >> 32) as u32)
 }
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler for UniformInt<Integer<S, N, B, OM>> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
+    for UniformInt<Integer<S, N, B, OM>>
+{
     type X = Integer<S, N, B, OM>;
 
     #[inline]
@@ -86,9 +93,13 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
             return Err(rand::distr::uniform::Error::EmptyRange);
         }
 
-        let range = high.wrapping_sub(low).wrapping_add(Integer::ONE).force_sign::<false>();
+        let range = high
+            .wrapping_sub(low)
+            .wrapping_add(Integer::ONE)
+            .force_sign::<false>();
         let thresh = if !range.is_zero() {
-            if Integer::<S, N, B, OM>::BITS <= 32 { // because rand uses u32 to generate <= 32-bit integers
+            if Integer::<S, N, B, OM>::BITS <= 32 {
+                // because rand uses u32 to generate <= 32-bit integers
                 use crate::cast::As;
 
                 let range = range.as_::<u32>();
@@ -110,7 +121,8 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
 
     #[inline]
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
-        if Integer::<S, N, B, OM>::BITS <= 32 { // because rand uses u32 to generate <= 32-bit integers
+        if Integer::<S, N, B, OM>::BITS <= 32 {
+            // because rand uses u32 to generate <= 32-bit integers
             use crate::cast::As;
 
             let range = self.range.force_sign::<false>().as_::<u32>();
@@ -145,7 +157,11 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
     }
 
     #[inline]
-    fn sample_single<R: Rng + ?Sized, B1, B2>(low_b: B1, high_b: B2, rng: &mut R) -> Result<Self::X, rand::distr::uniform::Error>
+    fn sample_single<R: Rng + ?Sized, B1, B2>(
+        low_b: B1,
+        high_b: B2,
+        rng: &mut R,
+    ) -> Result<Self::X, rand::distr::uniform::Error>
     where
         B1: SampleBorrow<Self::X> + Sized,
         B2: SampleBorrow<Self::X> + Sized,
@@ -159,7 +175,11 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
     }
 
     #[inline]
-    fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>(low_b: B1, high_b: B2, rng: &mut R) -> Result<Self::X, rand::distr::uniform::Error>
+    fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>(
+        low_b: B1,
+        high_b: B2,
+        rng: &mut R,
+    ) -> Result<Self::X, rand::distr::uniform::Error>
     where
         B1: SampleBorrow<Self::X> + Sized,
         B2: SampleBorrow<Self::X> + Sized,
@@ -169,9 +189,13 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
         if high < low {
             return Err(rand::distr::uniform::Error::EmptyRange);
         }
-        let range = high.wrapping_sub(low).wrapping_add(Integer::ONE).force_sign::<false>();
+        let range = high
+            .wrapping_sub(low)
+            .wrapping_add(Integer::ONE)
+            .force_sign::<false>();
 
-        if Integer::<S, N, B, OM>::BITS <= 32 { // because rand uses u32 to generate <= 32-bit integers
+        if Integer::<S, N, B, OM>::BITS <= 32 {
+            // because rand uses u32 to generate <= 32-bit integers
             use crate::cast::As;
 
             let range = range.as_::<u32>();
@@ -188,7 +212,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
                         } else {
                             break;
                         }
-                    },
+                    }
                     None => {
                         result += 1;
                         break;
@@ -212,7 +236,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
                     } else {
                         break;
                     }
-                },
+                }
                 None => {
                     result += Uint::<N, B, OM>::ONE;
                     break;
@@ -227,7 +251,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> UniformSampler
 #[cfg(test)]
 crate::test::test_all! {
     testing integers;
-    
+
     use rand::{Fill, SeedableRng};
     use rand::rngs::SmallRng; // use SmallRng as doesn't require an extra crate feature
 
@@ -280,7 +304,7 @@ crate::test::test_all! {
             use crate::cast::CastFrom;
 
             let mut result = true;
-            
+
             let (mut rng, mut rng2) = seeded_rngs::<SmallRng>(seed);
 
             let min_big = STEST::cast_from(min);

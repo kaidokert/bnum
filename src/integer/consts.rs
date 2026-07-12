@@ -1,6 +1,6 @@
-use crate::{Integer, Int};
-use crate::OverflowMode;
 use crate::Byte;
+use crate::OverflowMode;
+use crate::{Int, Integer};
 
 use crate::Exponent;
 
@@ -10,17 +10,17 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// - If `OM` is `0`, the overflow mode is [`OverflowMode::Wrap`].
     /// - If `OM` is `1`, the overflow mode is [`OverflowMode::Panic`].
     /// - If `OM` is `2`, the overflow mode is [`OverflowMode::Saturate`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::OverflowMode;
-    /// 
+    ///
     /// type U264w = t!(U264w);
     /// type I155p = t!(I155p);
     /// type I512s = t!(I512s);
-    /// 
+    ///
     /// assert_eq!(U264w::OVERFLOW_MODE, OverflowMode::Wrap);
     /// assert_eq!(I155p::OVERFLOW_MODE, OverflowMode::Panic);
     /// assert_eq!(I512s::OVERFLOW_MODE, OverflowMode::Saturate);
@@ -36,12 +36,12 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     };
 
     /// The bit width of the type.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::types::{U512, I1024};
-    /// 
+    ///
     /// assert_eq!(U512::BITS, 512);
     /// assert_eq!(I1024::BITS, 1024);
     /// ```
@@ -52,9 +52,9 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     };
 
     /// The total number of bytes that this type contains.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::types::{U256, I512};
     ///
@@ -64,25 +64,24 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     pub const BYTES: Exponent = Self::BITS.div_ceil(8);
 
     // / The value `0`.
-    // / 
+    // /
     // / # Examples
-    // / 
+    // /
     // / ```
     // / use bnum::types::{U2048, I256};
-    // / 
+    // /
     // / assert_eq!(U2048::ZERO.count_zeros(), 2048);
     // / assert_eq!(n!().count_ones(), 0);
     // / ```
     pub(crate) const ZERO: Self = Self::from_bytes([0; N]);
 
-
     // / The value `1`.
-    // / 
+    // /
     // / # Examples
-    // / 
+    // /
     // / ```
     // / use bnum::types::{U1024, I1024};
-    // / 
+    // /
     // / assert_eq!(U1024::ONE.trailing_ones(), 1);
     // / assert_eq!(I1024::ONE.leading_zeros(), 1023);
     // / ```
@@ -91,13 +90,13 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     pub(crate) const ALL_ONES: Self = Self::from_bytes([0xFF; N]);
 
     /// The minimum value that this type can represent. For unsigned integers, this is `0`. For signed integers, this is `-2^(Self::BITS - 1)`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U512, I512};
-    /// 
+    ///
     /// assert_eq!(U512::MIN, n!(0));
     /// assert_eq!(I512::MIN.trailing_zeros(), 511); // memory representation is 100...0
     /// ```
@@ -110,12 +109,12 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     };
 
     /// The maximum value that this type can represent. For unsigned integers, this is `2^Self::BITS - 1`. For signed integers, this is `2^(Self::BITS - 1) - 1`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::types::{U256, I256};
-    /// 
+    ///
     /// assert_eq!(U256::MAX.not(), U256::MIN); // memory representation of `Self::MAX` is 111...1
     /// assert_eq!(I256::MAX.not(), I256::MIN); // memory representation of `Self::MAX` is 011...1
     /// ```
@@ -130,12 +129,12 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
 
 impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     // / The value `-1`.
-    // / 
+    // /
     // / # Examples
-    // / 
+    // /
     // / ```
     // / use bnum::types::I256;
-    // / 
+    // /
     // / assert_eq!(I256::NEG_ONE.count_ones(), 256); // memory representation is 111...1
     // / ```
     pub(crate) const NEG_ONE: Self = Self::ALL_ONES;

@@ -12,7 +12,9 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Binary for Int
     }
 }
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> LowerHex for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> LowerHex
+    for Integer<S, N, B, OM>
+{
     #[inline]
     fn fmt(&self, f: &mut Formatter) -> core::fmt::Result {
         if !S {
@@ -23,7 +25,9 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> LowerHex for I
     }
 }
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> UpperHex for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> UpperHex
+    for Integer<S, N, B, OM>
+{
     #[inline]
     fn fmt(&self, f: &mut Formatter) -> core::fmt::Result {
         if !S {
@@ -57,7 +61,11 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Debug for Inte
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Display for Integer<S, N, B, OM> {
     #[inline]
     fn fmt(&self, f: &mut Formatter) -> core::fmt::Result {
-        f.pad_integral(!self.is_negative_internal(), "", &self.unsigned_abs_internal().to_str_radix(10))
+        f.pad_integral(
+            !self.is_negative_internal(),
+            "",
+            &self.unsigned_abs_internal().to_str_radix(10),
+        )
     }
 }
 
@@ -80,14 +88,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 }
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> LowerExp for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> LowerExp
+    for Integer<S, N, B, OM>
+{
     #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         self.exp_fmt(f, "e")
     }
 }
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> UpperExp for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> UpperExp
+    for Integer<S, N, B, OM>
+{
     #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         self.exp_fmt(f, "E")
@@ -185,4 +197,3 @@ mod tests {
         }
     }
 }
-

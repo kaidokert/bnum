@@ -86,6 +86,24 @@ impl<const N: usize, const B: usize, const OM: u8>
 }
 
 impl<const N: usize, const B: usize, const OM: u8>
+    const_num_traits::ops::checked::CheckedAdd for Uint<N, B, OM>
+{
+    type Output = Self;
+    fn checked_add(self, v: Self) -> Option<Self> {
+        Integer::checked_add(self, v)
+    }
+}
+
+impl<const N: usize, const B: usize, const OM: u8>
+    const_num_traits::ops::checked::CheckedMul for Uint<N, B, OM>
+{
+    type Output = Self;
+    fn checked_mul(self, v: Self) -> Option<Self> {
+        Integer::checked_mul(self, v)
+    }
+}
+
+impl<const N: usize, const B: usize, const OM: u8>
     const_num_traits::ops::overflowing::OverflowingSub for Uint<N, B, OM>
 {
     type Output = Self;

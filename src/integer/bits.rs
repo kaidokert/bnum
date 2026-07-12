@@ -202,7 +202,11 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
             return out;
         } else {
             // u32 is fastest
-            unsafe { self.to_digits::<u32>().unchecked_rotate_left(n % Self::BITS).to_integer() }
+            unsafe {
+                self.to_digits::<u32>()
+                    .unchecked_rotate_left(n % Self::BITS)
+                    .to_integer()
+            }
         }
     }
 
@@ -336,12 +340,14 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     #[inline]
     pub(crate) const unsafe fn unchecked_shr_internal(self, rhs: Exponent) -> Self {
         if Self::LAST_BYTE_PAD_BITS != 0 {
-            let out = unsafe {
-                self.widen().unchecked_shr_internal(rhs)
-            };
+            let out = unsafe { self.widen().unchecked_shr_internal(rhs) };
             return out.force();
         }
-        unsafe { self.to_digits::<u64>().unchecked_shr(rhs, self.is_negative_internal()).to_integer() }
+        unsafe {
+            self.to_digits::<u64>()
+                .unchecked_shr(rhs, self.is_negative_internal())
+                .to_integer()
+        }
     }
 
     /// Returns a boolean representing the bit in the given position (`true` if the bit is 1). The least significant bit is at index `0`, the most significant bit is at index `Self::BITS - 1`.

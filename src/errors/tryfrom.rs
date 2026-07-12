@@ -1,5 +1,5 @@
-use core::fmt::{self, Display, Formatter};
 use core::error::Error;
+use core::fmt::{self, Display, Formatter};
 
 /// The error type that is returned when a failed conversion from an integer occurs.
 ///
@@ -29,10 +29,8 @@ pub struct TryFromCharError(pub(crate) ());
 
 impl Error for TryFromCharError {}
 
-const TRY_FROM_CHAR_ERROR_MESSAGE: &str = concat!(
-    super::err_prefix!(),
-    "unicode code point out of range"
-);
+const TRY_FROM_CHAR_ERROR_MESSAGE: &str =
+    concat!(super::err_prefix!(), "unicode code point out of range");
 
 impl Display for TryFromCharError {
     #[inline]

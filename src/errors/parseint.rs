@@ -1,6 +1,6 @@
+use core::error::Error;
 use core::fmt::{self, Debug, Display, Formatter};
 use core::num::IntErrorKind;
-use core::error::Error;
 
 /// The error type that is returned when parsing an integer from an invalid source.
 ///

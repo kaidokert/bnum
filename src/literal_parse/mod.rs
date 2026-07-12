@@ -1,15 +1,15 @@
 mod digits;
-mod type_descriptor;
 mod panic;
+mod type_descriptor;
 
 pub use digits::*;
-pub use type_descriptor::*;
 pub use panic::*;
+pub use type_descriptor::*;
 
 /// Returns a concrete instantiation of the [`Integer`](crate::Integer) type with the specified const-generic parameters from a type descriptor.
-/// 
+///
 /// `t!` takes a type descriptor (which is an identifier fragment) and simply outputs [`Integer<S, N, B, OM>`](crate::Integer), where the values of the const-generic parameters `S`, `N`, `B` and `OM` are determined from the type descriptor.
-/// 
+///
 /// A type descriptor has the following format: `<sign><bit_width><overflow_mode>?`:
 /// - `<sign>` is either `I` (specifying a signed integer) or `U` (specifying an unsigned integer).
 /// - `<bit_width>` is a decimal integer specifying the bit width of the integer type. The bit width must be at least `2` and at most `2^32 - 1`.
@@ -19,44 +19,44 @@ pub use panic::*;
 ///     - `s` for saturating overflow mode ([`OverflowMode::Saturate`](crate::OverflowMode::Saturate)).
 ///     
 ///     If `<overflow_mode>` is omitted, the default overflow mode ([`OverflowMode::DEFAULT`](crate::OverflowMode::DEFAULT)) is used.
-/// 
+///
 /// If the given type descriptor is not in this format, a compile error will be triggered when the type is used (when the type is unused, no compile-error will be triggered).
-/// 
+///
 /// If you want to create [`Integer`](crate::Integer) values rather than types, use the [`n!`](crate::n) macro.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```
 /// use bnum::prelude::*;
-/// 
+///
 /// type MyInt = t!(I259p); // signed 259-bit integer with panicking overflow mode
 /// type MyUint = t!(U633); // unsigned 633-bit integer with default overflow mode
 /// type MyInt2 = t!(I538s); // signed 538-bit integer with saturating overflow mode
 /// type MyUint2 = t!(U24w); // unsigned 24-bit integer with wrapping overflow mode
 /// ```
-/// 
+///
 /// The following examples will fail to compile, since the type descriptor is invalid. Note the type must be used in order to trigger the compile error.
 /// ```compile_fail
 /// use bnum::prelude::*;
-/// 
+///
 /// type InvalidType = t!(A256); // invalid sign descriptor
-/// 
+///
 /// dbg!(InvalidType::BITS);
 /// ```
-/// 
+///
 /// ```compile_fail
 /// use bnum::prelude::*;
-/// 
+///
 /// type InvalidType2 = t!(I1); // bit width too small
-/// 
+///
 /// dbg!(InvalidType2::BITS);
 /// ```
-/// 
+///
 /// ```compile_fail
 /// use bnum::prelude::*;
-/// 
+///
 /// type InvalidType3 = t!(U1024x); // invalid overflow mode descriptor
-/// 
+///
 /// dbg!(InvalidType3::BITS);
 /// ```
 #[macro_export]
@@ -87,68 +87,67 @@ macro_rules! t {
     };
 }
 
-
 /// Create constant [`Integer`](crate::Integer) values from native integer literals.
-/// 
+///
 /// `n!` converts integer literals to [`Integer`](crate::Integer) values at compile time. It supports literals in base 2, 8, 10 and 16:
 /// - The prefix `0b` indicates a binary literal (base 2).
 /// - The prefix `0o` indicates an octal literal (base 8).
 /// - The prefix `0x` indicates a hexadecimal literal (base 16).
 /// - Literals are treated as decimal literals (base 10) if no prefix is specified.
-/// 
+///
 /// `n!` accepts two forms of integer literal as input:
 /// 1. Suffix-free, e.g. `n!(0xABCDEF)`. In this case, the const-generic parameters of the created [`Integer`](crate::Integer) are left unspecified, so this must be used in a context where type inference can determine the parameters. For example: `let a: Integer<false, 16> = n!(0xABCDEF);` would be valid, but `let b = n!(0xABCDEF);` would trigger a compile error (unless `b` was subsequently used in a context which allowed for type inference).
 /// 2. With a suffix, e.g. `n!(0xabcdefU128w)`. The suffix may be any valid argument to the [`t!`](crate::t) macro. The suffix is referred to as a _type descriptor_, as it specifies the values of the const-generic parameters of the created [`Integer`](crate::Integer). For more information about valid type descriptors, see the documentation of the [`t!`](crate::t) macro.
-/// 
+///
 /// Invoking `n!` with invalid arguments will also trigger a compile error. This can happen if:
 /// - The literal is out of range for the target type (works for inferred types and types specified by a suffix). Note that this will always cause a compile error, regardless of the overflow mode of the type.
 /// - The literal contains an invalid digit.
 /// - A `-` sign appears at the start of the literal when the type is unsigned, e.g. `n!(-123U256)`.
 /// - The suffix is an invalid type descriptor.
-/// 
-/// 
+///
+///
 /// # Examples
-/// 
+///
 /// ```
 /// use bnum::prelude::*; // n! and t! are re-exported in the prelude
-/// 
+///
 /// let a: t!(U256) = n!(0xABCDEF); // type inferred from context
 /// ```
-/// 
+///
 /// ```
 /// use bnum::prelude::*;
-/// 
+///
 /// let b = n!(123456_I511s); // type specified by the suffix
 /// // suffix specifies signed 511-bit integer with saturating overflow behaviour
 /// // note that we don't need to define a type alias I511s here
 /// ```
-/// 
+///
 /// The following example will fail to compile, since the compiler is unable to infer the type of the integer:
 /// ```compile_fail
 /// use bnum::prelude::*;
-/// 
+///
 /// let a = n!(0o7654321);
 /// ```
-/// 
+///
 /// The following example will fail to compile, since the literal is out of range for the specified type:
 /// ```compile_fail
 /// use bnum::prelude::*;
-/// 
+///
 /// let c = n!(0x1000000U24);
 /// ```
-/// 
+///
 /// The following example will fail to compile, since the literal contains an invalid digit for the specified base:
 /// ```compile_fail
 /// use bnum::prelude::*;
 /// use bnum::types::I256;
-/// 
+///
 /// let d: I256 = n!(1234A);
 /// ```
-/// 
+///
 /// The following example will fail to compile, since the given type descriptor is invalid:
 /// ```compile_fail
 /// use bnum::prelude::*;
-/// 
+///
 /// let e = n!(12345U1024x);
 /// ```
 // TODO: support other prefixes, e.g. 0t for base 3, 0q for base 4, 0z for base 36, etc.
@@ -202,7 +201,9 @@ macro_rules! n {
 
 #[doc(hidden)]
 #[inline]
-pub const fn get_negative_radix_digits_type_descriptor(literal_str: &str) -> (bool, u32, &[u8], &str) {
+pub const fn get_negative_radix_digits_type_descriptor(
+    literal_str: &str,
+) -> (bool, u32, &[u8], &str) {
     let bytes = literal_str.as_bytes();
     let negative = !bytes.is_empty() && bytes[0] == b'-';
     let bytes = if negative { bytes.split_at(1).1 } else { bytes };
@@ -227,8 +228,13 @@ pub const fn get_negative_radix_digits_type_descriptor(literal_str: &str) -> (bo
     while i < bytes.len() {
         let c = bytes[i] as char;
         let is_digit = match radix {
-            16 => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || c == '_',
-            _ => (c >= '0' && c <= '9') || c == '_' ,
+            16 => {
+                (c >= '0' && c <= '9')
+                    || (c >= 'a' && c <= 'f')
+                    || (c >= 'A' && c <= 'F')
+                    || c == '_'
+            }
+            _ => (c >= '0' && c <= '9') || c == '_',
         };
         if !is_digit {
             last_digit_index = i;

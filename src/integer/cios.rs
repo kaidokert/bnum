@@ -10,8 +10,14 @@ use modmath_cios::CiosRowOps;
 const fn read_u64(bytes: &[u8], limb: usize) -> u64 {
     let s = limb * 8;
     u64::from_le_bytes([
-        bytes[s], bytes[s+1], bytes[s+2], bytes[s+3],
-        bytes[s+4], bytes[s+5], bytes[s+6], bytes[s+7],
+        bytes[s],
+        bytes[s + 1],
+        bytes[s + 2],
+        bytes[s + 3],
+        bytes[s + 4],
+        bytes[s + 5],
+        bytes[s + 6],
+        bytes[s + 7],
     ])
 }
 
@@ -31,7 +37,12 @@ impl<const N: usize, const B: usize, const OM: u8> CiosRowOps for Uint<N, B, OM>
 
     #[inline]
     fn word_count(&self) -> usize {
-        const { assert!(N % 8 == 0, "Uint byte width N must be a multiple of 8 for CiosRowOps") }
+        const {
+            assert!(
+                N % 8 == 0,
+                "Uint byte width N must be a multiple of 8 for CiosRowOps"
+            )
+        }
         N / 8
     }
 
@@ -67,7 +78,8 @@ impl<const N: usize, const B: usize, const OM: u8> CiosRowOps for Uint<N, B, OM>
         // Words 1..words: shift down by one position.
         let mut j = 1;
         while j < words {
-            let product = scalar as u128 * read_u64(m, j) as u128 + read_u64(a, j) as u128 + carry as u128;
+            let product =
+                scalar as u128 * read_u64(m, j) as u128 + read_u64(a, j) as u128 + carry as u128;
             write_u64(a, j - 1, product as u64);
             carry = (product >> 64) as u64;
             j += 1;

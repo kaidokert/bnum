@@ -9,16 +9,16 @@ macro_rules! impl_desc {
 #[doc = impl_desc!()]
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, B, OM> {
     /// Strict integer addition. Computes `self + rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(2U24).strict_add(n!(3U24)), n!(5U24));
     /// assert_eq!(n!(-2I24).strict_add(n!(-3I24)), n!(-5I24));
     /// ```
@@ -26,7 +26,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::U256;
-    /// 
+    ///
     /// let _ = U256::MAX.strict_add(n!(1));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -37,16 +37,16 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Strict integer addition. Computes `self + rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(5U24).strict_sub(n!(2U24)), n!(3U24));
     /// assert_eq!(n!(-5I24).strict_sub(n!(-2I24)), n!(-3I24));
     /// ```
@@ -54,7 +54,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::I512;
-    /// 
+    ///
     /// let _ = I512::MIN.strict_sub(n!(1));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -65,16 +65,16 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Strict integer addition. Computes `self + rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(2U24).strict_mul(n!(3U24)), n!(6U24));
     /// assert_eq!(n!(-2I24).strict_mul(n!(3I24)), n!(-6I24));
     /// ```
@@ -82,7 +82,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::U1024;
-    /// 
+    ///
     /// let _ = U1024::MAX.strict_mul(n!(2));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -93,18 +93,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Strict integer addition. Computes `self + rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if `rhs` is `0` or if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// Overflow can only occur if the integers are signed, and `self` is [`Self::MIN`] and `rhs` is `-1`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(9U24).strict_div(n!(4)), n!(2));
     /// assert_eq!(n!(-9I24).strict_div(n!(4)), n!(-2));
     /// ```
@@ -112,13 +112,13 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::I2048;
-    /// 
+    ///
     /// let _ = I2048::MIN.strict_div(n!(-1));
     /// ```
     /// The following example will panic due to division by zero:
     /// ```should_panic
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let _ = n!(10U2048).strict_div(n!(0));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -128,24 +128,26 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
             panic!(crate::errors::err_msg!("attempt to divide with overflow"));
         }
         if rhs.is_zero() {
-            panic!(crate::errors::err_msg!(crate::errors::div_by_zero_message!()));
+            panic!(crate::errors::err_msg!(
+                crate::errors::div_by_zero_message!()
+            ));
         }
         self.div_rem_unchecked(rhs).0
     }
 
     /// Strict integer addition. Computes `self + rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if `rhs` is `0` or if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// Overflow can only occur if the integers are signed, and `self` is [`Self::MIN`] and `rhs` is `-1`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(9U24).strict_div_euclid(n!(4)), n!(2));
     /// assert_eq!(n!(-9I24).strict_div_euclid(n!(4)), n!(-3));
     /// ```
@@ -153,13 +155,13 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::I256;
-    /// 
+    ///
     /// let _ = I256::MIN.strict_div_euclid(n!(-1));
     /// ```
     /// The following example will panic due to division by zero:
     /// ```should_panic
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let _ = n!(10U256).strict_div_euclid(n!(0));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -169,24 +171,26 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
             panic!(crate::errors::err_msg!("attempt to divide with overflow"));
         }
         if rhs.is_zero() {
-            panic!(crate::errors::err_msg!(crate::errors::div_by_zero_message!()));
+            panic!(crate::errors::err_msg!(
+                crate::errors::div_by_zero_message!()
+            ));
         }
         self.div_rem_euclid_unchecked(rhs).0
     }
 
     /// Strict integer remainder. Computes `self % rhs`, panicking if the division results in overflow.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if `rhs` is `0` or if overflow occurs in the division, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// Overflow can only occur if the integers are signed, and `self` is [`Self::MIN`] and `rhs` is `-1`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(9U24).strict_rem(n!(4)), n!(1));
     /// assert_eq!(n!(-9I24).strict_rem(n!(4)), n!(-1));
     /// ```
@@ -194,40 +198,44 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::I512;
-    /// 
+    ///
     /// let _ = I512::MIN.strict_rem(n!(-1));
     /// ```
     /// The following example will panic due to division by zero:
     /// ```should_panic
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let _ = n!(10U512).strict_rem(n!(0));
     /// ```
     #[must_use = doc::must_use_op!()]
     #[inline]
     pub const fn strict_rem(self, rhs: Self) -> Self {
         if self.is_division_overflow(&rhs) {
-            panic!(crate::errors::err_msg!("attempt to calculate the remainder with overflow"));
+            panic!(crate::errors::err_msg!(
+                "attempt to calculate the remainder with overflow"
+            ));
         }
         if rhs.is_zero() {
-            panic!(crate::errors::err_msg!(crate::errors::rem_by_zero_message!()));
+            panic!(crate::errors::err_msg!(
+                crate::errors::rem_by_zero_message!()
+            ));
         }
         self.div_rem_unchecked(rhs).1
     }
 
     /// Strict integer remainder. Computes `self % rhs`, panicking if the division results in overflow.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if `rhs` is `0` or if overflow occurs in the division, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// Overflow can only occur if the integers are signed, and `self` is [`Self::MIN`] and `rhs` is `-1`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(9U24).strict_rem_euclid(n!(4)), n!(1));
     /// assert_eq!(n!(-9I24).strict_rem_euclid(n!(4)), n!(3));
     /// ```
@@ -235,53 +243,57 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::I1024;
-    /// 
+    ///
     /// let _ = I1024::MIN.strict_rem_euclid(n!(-1));
     /// ```
     /// The following example will panic due to division by zero:
     /// ```should_panic
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let _ = n!(10U1024).strict_rem_euclid(n!(0));
     /// ```
     #[must_use = doc::must_use_op!()]
     #[inline]
     pub const fn strict_rem_euclid(self, rhs: Self) -> Self {
         if self.is_division_overflow(&rhs) {
-            panic!(crate::errors::err_msg!("attempt to calculate the remainder with overflow"));
+            panic!(crate::errors::err_msg!(
+                "attempt to calculate the remainder with overflow"
+            ));
         }
         if rhs.is_zero() {
-            panic!(crate::errors::err_msg!(crate::errors::rem_by_zero_message!()));
+            panic!(crate::errors::err_msg!(
+                crate::errors::rem_by_zero_message!()
+            ));
         }
         self.div_rem_euclid_unchecked(rhs).1
     }
 
     /// Strict negation. Computes `-self`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// For unsigned integers, overflow will occur unless `self` is `0`. For signed integers, overflow will only occur if `self` is [`Self::MIN`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(0U24).strict_neg(), n!(0));
     /// assert_eq!(n!(5I24).strict_neg(), n!(-5));
     /// ```
     /// The following examples will panic due to overflow:
     /// ```should_panic
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let _ = n!(1U256).strict_neg();
     /// ```
-    /// 
+    ///
     /// ```should_panic
     /// use bnum::types::I256;
-    /// 
+    ///
     /// let _ = I256::MIN.strict_neg();
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -292,23 +304,23 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Strict left shift. Computes `self << rhs`, panicking if `rhs` is greater than or equal to [`Self::BITS`].
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if `rhs` is greater than or equal to [`Self::BITS`], regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(3U24).strict_shl(2), n!(12U24));
     /// assert_eq!(n!(-3I24).strict_shl(2), n!(-12I24));
     /// ```
     /// The following example will panic due to overflow:
     /// ```should_panic
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let _ = n!(1U512).strict_shl(512);
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -320,23 +332,23 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Strict right shift. Computes `self >> rhs`, panicking if `rhs` is greater than or equal to [`Self::BITS`].
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if `rhs` is greater than or equal to [`Self::BITS`], regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(17U24).strict_shr(2), n!(4U24));
     /// assert_eq!(n!(-23I24).strict_shr(2), n!(-6I24));
     /// ```
     /// The following example will panic due to overflow:
     /// ```should_panic
     /// use bnum::types::I1024;
-    /// 
+    ///
     /// let _ = I1024::MAX.strict_shr(1024);
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -348,23 +360,23 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Strict exponentiation. Computes `self.pow(exp)`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(2U24).strict_pow(3), n!(8));
     /// assert_eq!(n!(-3I24).strict_pow(5), n!(-243));
     /// ```
     /// The following example will panic due to overflow:
     /// ```should_panic
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let _ = n!(2U2048).strict_pow(2048);
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -379,23 +391,23 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
 #[doc = concat!("(Unsigned integers only.) ", impl_desc!())]
 impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     /// Strict addition with a signed integer of the same bit width. Computes `self + rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(5U24).strict_add_signed(n!(-2I24)), n!(3U24));
     /// ```
     /// The following example will panic due to overflow:
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::U256;
-    /// 
+    ///
     /// let _ = U256::MIN.strict_add_signed(n!(-1I256));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -406,23 +418,23 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     }
 
     /// Strict subtraction by a signed integer of the same bit width. Computes `self - rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(5U24).strict_sub_signed(n!(-2I24)), n!(7U24));
     /// ```
     /// The following example will panic due to overflow:
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::U256;
-    /// 
+    ///
     /// let _ = U256::MAX.strict_sub_signed(n!(-1I256));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -436,29 +448,31 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     #[inline]
     pub(crate) const fn strict_next_power_of_two(self) -> Self {
         self.checked_next_power_of_two()
-            .expect(crate::errors::err_msg!("attempt to calculate next power of two with overflow"))
+            .expect(crate::errors::err_msg!(
+                "attempt to calculate next power of two with overflow"
+            ))
     }
 }
 
 #[doc = concat!("(Signed integers only.) ", impl_desc!())]
 impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     /// Strict absolute value. Computes `self.abs()`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs (i.e. if `self` is [`Self::MIN`]), regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(-5I24).strict_abs(), n!(5I24));
     /// ```
     /// The following example will panic due to overflow:
     /// ```should_panic
     /// use bnum::types::I512;
-    /// 
+    ///
     /// let _ = I512::MIN.strict_abs();
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -469,23 +483,23 @@ impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     }
 
     /// Strict addition with an unsigned integer of the same bit width. Computes `self + rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(5I24).strict_add_unsigned(n!(2U24)), n!(7I24));
     /// ```
     /// The following example will panic due to overflow:
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::I1024;
-    /// 
+    ///
     /// let _ = I1024::MAX.strict_add_unsigned(n!(1U1024));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -496,23 +510,23 @@ impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     }
 
     /// Strict subtraction by an unsigned integer of the same bit width. Computes `self - rhs`, panicking if overflow occurs.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if overflow occurs, regardless of [`Self::OVERFLOW_MODE`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// assert_eq!(n!(5I24).strict_sub_unsigned(n!(7U24)), n!(-2I24));
     /// ```
     /// The following example will panic due to overflow:
     /// ```should_panic
     /// use bnum::prelude::*;
     /// use bnum::types::I2048;
-    /// 
+    ///
     /// let _ = I2048::MIN.strict_sub_unsigned(n!(1U2048));
     /// ```
     #[must_use = doc::must_use_op!()]
@@ -557,7 +571,7 @@ mod tests {
     }
     crate::test::test_all! {
         testing integers;
-        
+
         test_bignum! {
             function: <stest>::strict_add(a: stest, b: stest),
             skip: a.checked_add(b).is_none()
