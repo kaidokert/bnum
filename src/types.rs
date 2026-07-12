@@ -1,5 +1,5 @@
 //! Type aliases for unsigned and signed integers.
-//! 
+//!
 //! Each type alias has the same overflow behaviour as that of the primitive integer types, i.e. wrap on overflow if `overflow-checks` are disabled and panic on overflow if `overflow-checks` are enabled.
 
 macro_rules! int_type_doc {
@@ -31,6 +31,7 @@ macro_rules! call_types_macro {
         $name! {
             128 U128 I128;
             256 U256 I256;
+            384 U384 I384;
             512 U512 I512;
             1024 U1024 I1024;
             2048 U2048 I2048;
@@ -65,7 +66,6 @@ call_types_macro!(int_types);
 // #[cfg(feature = "float")]
 // /// 256-bit floating point type with 236 bits of precision, stored as the binary256 (octuple precision) format defined in IEEE 754-2019.
 // pub type F256 = crate::Float<32, 236>;
-
 
 #[cfg(test)]
 mod tests {
