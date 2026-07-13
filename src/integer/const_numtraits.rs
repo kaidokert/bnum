@@ -104,6 +104,14 @@ impl<const N: usize, const B: usize, const OM: u8>
 }
 
 impl<const N: usize, const B: usize, const OM: u8>
+    const_num_traits::ops::bits::BitsPrecision for Uint<N, B, OM>
+{
+    fn bits_precision(self) -> u32 {
+        Self::BITS
+    }
+}
+
+impl<const N: usize, const B: usize, const OM: u8>
     const_num_traits::ops::overflowing::OverflowingSub for Uint<N, B, OM>
 {
     type Output = Self;
