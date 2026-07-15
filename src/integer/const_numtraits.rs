@@ -106,7 +106,7 @@ impl<const N: usize, const B: usize, const OM: u8>
 impl<const N: usize, const B: usize, const OM: u8>
     const_num_traits::ops::bits::BitsPrecision for Uint<N, B, OM>
 {
-    fn bits_precision(self) -> u32 {
+    fn bits_precision(&self) -> u32 {
         Self::BITS
     }
 }
