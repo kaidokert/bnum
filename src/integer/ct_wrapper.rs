@@ -17,7 +17,7 @@
 use core::ops::{BitAnd, BitOr, BitXor, Not, Shl, Shr, ShrAssign};
 
 use const_num_traits::ops::byte_slice::ByteSliceError;
-use const_num_traits::ops::overflowing::OverflowingAdd;
+use const_num_traits::ops::overflowing::{OverflowingAdd, OverflowingMul};
 use const_num_traits::ops::wrapping::{WrappingAdd, WrappingMul, WrappingSub};
 use const_num_traits::{
     BorrowingSub, CarryingMul, ConstOne, ConstZero, CtIsZero, FromByteSlice, HasPersonality,
@@ -177,6 +177,14 @@ impl<U: OverflowingAdd<Output = U>> OverflowingAdd for Ct<U> {
     type Output = Self;
     fn overflowing_add(self, v: Self) -> (Self, bool) {
         let (r, o) = self.0.overflowing_add(v.0);
+        (Ct(r), o)
+    }
+}
+
+impl<U: OverflowingMul<Output = U>> OverflowingMul for Ct<U> {
+    type Output = Self;
+    fn overflowing_mul(self, v: Self) -> (Self, bool) {
+        let (r, o) = self.0.overflowing_mul(v.0);
         (Ct(r), o)
     }
 }
