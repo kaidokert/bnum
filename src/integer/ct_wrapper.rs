@@ -136,11 +136,17 @@ impl<U: PrimBits> PrimBits for Ct<U> {
     }
 }
 
-// ── BitsPrecision / WithPrecision ─────────────────────────────────────────────
+// ── BitsPrecision / BitWidth / WithPrecision ──────────────────────────────────
 
 impl<U: const_num_traits::BitsPrecision> const_num_traits::BitsPrecision for Ct<U> {
     fn bits_precision(&self) -> u32 {
         self.0.bits_precision()
+    }
+}
+
+impl<U: const_num_traits::BitWidth + Copy> const_num_traits::BitWidth for Ct<U> {
+    fn bit_width(self) -> u32 {
+        self.0.bit_width()
     }
 }
 

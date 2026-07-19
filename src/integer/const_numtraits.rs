@@ -112,6 +112,14 @@ impl<const N: usize, const B: usize, const OM: u8>
 }
 
 impl<const N: usize, const B: usize, const OM: u8>
+    const_num_traits::ops::bits::BitWidth for Uint<N, B, OM>
+{
+    fn bit_width(self) -> u32 {
+        Self::BITS - self.leading_zeros()
+    }
+}
+
+impl<const N: usize, const B: usize, const OM: u8>
     const_num_traits::ops::bits::WithPrecision for Uint<N, B, OM>
 {
     fn widen_to_precision(self, _bits_precision: u32) -> Self {
