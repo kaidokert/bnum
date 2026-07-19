@@ -1,10 +1,13 @@
-mod consts;
 mod bigint_helpers;
 mod bits;
 mod bytes;
 pub mod cast;
 mod checked;
+mod cios;
 mod cmp;
+mod const_numtraits;
+pub mod ct_wrapper;
+mod consts;
 mod convert;
 mod div;
 #[cfg(feature = "alloc")]
@@ -20,11 +23,11 @@ mod radix;
 #[cfg(feature = "rand")]
 mod random;
 
+mod const_trait_fillers;
 mod saturating;
 mod strict;
 mod unchecked;
 mod wrapping;
-mod const_trait_fillers;
 
 use crate::Byte;
 use crate::digits::Digits;
@@ -47,7 +50,7 @@ use ::{
 use core::default::Default;
 
 /// A fixed-size integer type, generic over signedness, bit width, and overflow behaviour.
-/// 
+///
 /// `Integer` has four const-generic parameters:
 /// - `S`: determines whether the integer behaves as an unsigned integer (`S = false`), or a signed integer (`S = true`);
 /// - `N`: specifies how many bytes should be used to store the integer. The bytes are stored in little endian order (least significant byte first).
@@ -57,7 +60,7 @@ use core::default::Default;
 ///    - `1` ([`Panic`](OverflowMode::Panic)): arithmetic operations panic on overflow.
 ///    - `2` ([`Saturate`](OverflowMode::Saturate)): arithmetic operations saturate on overflow.  
 /// By default, `OM` is set to `0` if the [`overflow-checks` flag](https://doc.rust-lang.org/cargo/reference/profiles.html#overflow-checks) is disabled, and `1` if `overflow-checks` is enabled.
-/// 
+///
 /// `Integer` closely follows the API and behaviour of Rust's primitive integer types: `u8`, `i8`, `u16`, `i16`, `u32`, `i32`, `u64`, `i64`, `u128`, `i128`, `usize` and `isize`. The only differences are:
 /// - The primitive integers are stored in native-endian byte order. `Integer`s are always stored in little-endian byte order.
 /// - Primitive integers are serialised in [`serde`](https://docs.rs/serde/latest/serde/) as decimal strings. `Integer`s are serialised using [`derive(Serialize)`](https://docs.rs/serde/latest/serde/derive.Serialize.html), i.e. as a struct.
@@ -77,27 +80,37 @@ use core::default::Default;
 #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[cfg_attr(feature = "valuable", derive(valuable::Valuable))]
 #[repr(transparent)]
-pub struct Integer<const S: bool, const N: usize, const B: usize = 0, const OM: u8 = {OverflowMode::DEFAULT as u8}> {
+pub struct Integer<
+    const S: bool,
+    const N: usize,
+    const B: usize = 0,
+    const OM: u8 = { OverflowMode::DEFAULT as u8 },
+> {
     #[cfg_attr(feature = "serde", serde(with = "BigArray"))]
     pub(crate) bytes: [Byte; N],
 }
 
 /// Unsigned integer type with const-generic bit width and overflow behaviour.
-/// 
+///
 /// By default, the overflow behaviour is the same as the primitive integer types (i.e. panicking when the `overflow-checks` flag is enabled, and wrapping when `overflow-checks` is disabled).
-/// 
+///
 /// For more details on how the const-generic parameters are interpreted, see the documentation for [`Integer`].
-pub type Uint<const N: usize, const B: usize = 0, const OM: u8 = {OverflowMode::DEFAULT as u8}> = Integer<false, N, B, OM>;
+pub type Uint<const N: usize, const B: usize = 0, const OM: u8 = { OverflowMode::DEFAULT as u8 }> =
+    Integer<false, N, B, OM>;
 
 /// Signed integer type with const-generic bit width and overflow behaviour.
-/// 
+///
 /// By default, the overflow behaviour is the same as the primitive integer types (i.e. panicking when the `overflow-checks` flag is enabled, and wrapping when `overflow-checks` is disabled).
-/// 
+///
 /// For more details on how the const-generic parameters are interpreted, see the documentation for [`Integer`].
-pub type Int<const N: usize, const B: usize = 0, const OM: u8 = {OverflowMode::DEFAULT as u8}> = Integer<true, N, B, OM>;
+pub type Int<const N: usize, const B: usize = 0, const OM: u8 = { OverflowMode::DEFAULT as u8 }> =
+    Integer<true, N, B, OM>;
 
 #[cfg(feature = "zeroize")]
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> zeroize::DefaultIsZeroes for Integer<S, N, B, OM> {}
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> zeroize::DefaultIsZeroes
+    for Integer<S, N, B, OM>
+{
+}
 
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, B, OM> {
     pub(crate) const LAST_BYTE_BITS: u32 = if Self::BITS % Byte::BITS == 0 {
@@ -130,7 +143,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
             }
         }
     }
-    
+
     #[inline(always)]
     const fn has_valid_pad_bits(&self) -> bool {
         if Self::LAST_BYTE_BITS == 8 {
@@ -150,7 +163,9 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     #[inline(always)]
-    pub(crate) const fn force<const R: bool, const A: usize, const RO: u8>(self) -> Integer<R, N, A, RO> {
+    pub(crate) const fn force<const R: bool, const A: usize, const RO: u8>(
+        self,
+    ) -> Integer<R, N, A, RO> {
         let mut out = Integer::from_bytes(self.bytes);
         if R != S {
             out.set_sign_bits();
@@ -194,7 +209,9 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Default for In
 }
 
 #[cfg(any(test, feature = "quickcheck"))]
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> quickcheck::Arbitrary for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> quickcheck::Arbitrary
+    for Integer<S, N, B, OM>
+{
     #[inline]
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
         let mut out = <Digits<u128, N> as quickcheck::Arbitrary>::arbitrary(g).to_integer();
@@ -206,7 +223,9 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> quickcheck::Ar
 // implementation if we don't have alloc, as otherwise can't call assert_eq! (since this requires Debug)
 // here, not in the fmt module, since that is enabled by the `alloc` feature
 #[cfg(not(feature = "alloc"))]
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> core::fmt::Debug for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> core::fmt::Debug
+    for Integer<S, N, B, OM>
+{
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         for byte in self.bytes.iter().rev() {
             write!(f, "{:02x}", byte)?;
@@ -218,7 +237,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> core::fmt::Deb
 #[cfg(test)]
 mod tests {
     use crate::cast::As;
-    
+
     crate::test::test_all! {
         testing integers;
 

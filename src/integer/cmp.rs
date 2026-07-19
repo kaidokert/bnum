@@ -1,7 +1,9 @@
 use crate::Integer;
 use core::cmp::{Ord, Ordering, PartialOrd};
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> PartialOrd for Integer<S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8> PartialOrd
+    for Integer<S, N, B, OM>
+{
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
@@ -37,7 +39,7 @@ mod tests {
 
     crate::test::test_all! {
         testing integers;
-        
+
         test_bignum! {
             function: <stest>::eq(a: ref &stest, b: ref &stest)
         }

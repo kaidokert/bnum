@@ -1,23 +1,23 @@
 use super::Integer;
-use crate::doc;
 use crate::Byte;
+use crate::doc;
 
 /// Methods that convert integers to and from byte arrays and slices.
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, B, OM> {
     /// Returns the underlying bytes of `self` as an array.
-    /// 
+    ///
     /// This method is equivalent to [`to_le_bytes`](Self::to_le_bytes).
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let a = n!(0xE3BD89U24);
     /// assert_eq!(a.to_bytes(), [0x89, 0xBD, 0xE3]);
-    /// 
+    ///
     /// let b = n!(0x0A412FI24);
     /// assert_eq!(b.to_bytes(), [0x2F, 0x41, 0x0A]);
     /// ```
@@ -28,17 +28,17 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Returns a reference to underlying bytes of `self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let a = n!(0xD1FB70U24);
     /// assert_eq!(a.as_bytes(), &[0x70, 0xFB, 0xD1]);
-    /// 
+    ///
     /// let b = n!(0x3F23A1I24);
     /// assert_eq!(b.as_bytes(), &[0xA1, 0x23, 0x3F]);
     /// ```
@@ -49,20 +49,20 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Returns a mutable reference to underlying bytes of `self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// let mut a = n!(0xD1FB70U24);
     /// let bytes = a.as_bytes_mut();
     /// bytes[0] = 0x3D;
     /// bytes[2] = 0xA5;
     /// assert_eq!(a, n!(0xA5FB3D));
-    /// 
+    ///
     /// let mut b = n!(0x1D3C4EI24);
     /// let bytes = b.as_bytes_mut();
     /// bytes[1] = 0xFF;
@@ -76,39 +76,50 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
 
     const ASSERT_IS_VALID: () = {
         assert!(OM <= 2, "invalid overflow mode");
-        assert!(Self::BITS.div_ceil(Byte::BITS) == N as u32 && (if usize::BITS > 32 { N < u32::MAX as usize } else { true }), "`N` must be equal to `B.div_ceil(8)`, unless `B` is `0`");
+        assert!(
+            Self::BITS.div_ceil(Byte::BITS) == N as u32
+                && (if usize::BITS > 32 {
+                    N < u32::MAX as usize
+                } else {
+                    true
+                }),
+            "`N` must be equal to `B.div_ceil(8)`, unless `B` is `0`"
+        );
         assert!(N != 0, "bnum types cannot be zero-sized");
         // `Self::BITS` must be at most `u32::MAX` (i.e. 2^32 - 1)
         // so `N` must be at most (2^32 - 1) / 8 = 2^29 - 1/8 = 2^29 - 1 (rounded down)
         assert!(Self::BITS >= 2, "bnum types must be at least 2 bits"); // having 1 bit is having a boolean so pointless
         if usize::BITS > 32 {
-            assert!((Self::BITS as usize) < (1 << 32), "bnum types must be less than 2^32 bits");
+            assert!(
+                (Self::BITS as usize) < (1 << 32),
+                "bnum types must be less than 2^32 bits"
+            );
         }
     };
 
     /// Creates a new integer from the given array of bytes. The first byte in the array is interpreted as the least significant byte, the last byte in the array is interpreted as the most significant byte.
-    /// 
+    ///
     /// If [`Self::BITS`] is not a multiple of `8`, then the high-order bits are ignored.
-    /// 
+    ///
     /// This method is equivalent to [`from_le_bytes`](Self::from_le_bytes).
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// type U24 = Uint<3>;
     /// type I24 = Int<3>;
     /// type U15 = t!(U15);
-    /// 
+    ///
     /// let bytes = [0x56, 0x34, 0x12];
     /// assert_eq!(U24::from_bytes(bytes), n!(0x123456));
-    /// 
+    ///
     /// let bytes = [0xFE, 0xDC, 0x7B];
     /// assert_eq!(I24::from_bytes(bytes), n!(0x7BDCFE));
-    /// 
+    ///
     /// assert_eq!(U15::from_bytes([0xFF, 0xFF]), U15::MAX); // = 0x7FFF. the high-order bit is ignored
     /// ```
     #[must_use]
@@ -127,36 +138,36 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// type U24 = Uint<3>;
     /// type I24 = Int<3>;
-    /// 
+    ///
     /// let a: U24 = n!(0x005CF1);
-    /// 
+    ///
     /// let b = U24::from_be_slice(&[0x00, 0x5C, 0xF1]);
     /// assert_eq!(b, Some(a));
-    /// 
+    ///
     /// let c = U24::from_be_slice(&[0x00, 0x00, 0x5C, 0xF1]);
     /// assert_eq!(c, Some(a));
     ///
     /// let d = U24::from_be_slice(&[0x00, 0x00, 0x00, 0x5C, 0xF1]);
     /// assert_eq!(d, Some(a));
-    /// 
+    ///
     /// let e = U24::from_be_slice(&[0x01, 0x00, 0x5C, 0xF1]);
     /// assert_eq!(e, None);
-    /// 
+    ///
     /// let a: I24 = n!(0xFF8A06).cast_signed();
     /// assert!(a.is_negative());
-    /// 
+    ///
     /// let b = I24::from_be_slice(&[0xFF, 0x8A, 0x06]);
     /// assert_eq!(b, Some(a));
-    /// 
+    ///
     /// let c = I24::from_be_slice(&[0xFF, 0xFF, 0x8A, 0x06]);
     /// assert_eq!(c, Some(a));
-    /// 
+    ///
     /// let d = I24::from_be_slice(&[0xFF, 0xFF, 0xFF, 0x8A, 0x06]);
     /// assert_eq!(d, Some(a));
-    /// 
+    ///
     /// let e = I24::from_be_slice(&[0xFE, 0xFF, 0x8A, 0x06]);
     /// assert_eq!(e, None);
     /// ```
@@ -178,11 +189,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
                 i += 1;
             }
         }
-        let mut bytes = if negative {
-            [u8::MAX; N]
-        } else {
-            [0; N]
-        };
+        let mut bytes = if negative { [u8::MAX; N] } else { [0; N] };
         let mut i = N;
         while i > N.saturating_sub(slice.len()) {
             i -= 1;
@@ -207,14 +214,14 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// type U24 = Uint<3>;
     /// type I24 = Int<3>;
-    /// 
+    ///
     /// let a: U24 = n!(0x005CF1);
     /// let b = U24::from_le_slice(&[0xF1, 0x5C, 0x00]);
     /// assert_eq!(b, Some(a));
-    /// 
+    ///
     /// let c = U24::from_le_slice(&[0xF1, 0x5C]);
     /// assert_eq!(c, Some(a));
     ///
@@ -223,13 +230,13 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     ///
     /// let e = U24::from_le_slice(&[0xF1, 0x5C, 0x00, 0x01]);
     /// assert_eq!(e, None);
-    /// 
+    ///
     /// let a: I24 = n!(0xFF8A06).cast_signed();
     /// assert!(a.is_negative());
-    /// 
+    ///
     /// let b = I24::from_le_slice(&[0x06, 0x8A, 0xFF]);
     /// assert_eq!(b, Some(a));
-    /// 
+    ///
     /// let c = I24::from_le_slice(&[0x06, 0x8A]); // 0x8A has a leading one, so the slice represents a negative number
     /// assert_eq!(c, Some(a));
     ///
@@ -257,11 +264,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
                 i += 1;
             }
         }
-        let mut bytes = if negative {
-            [u8::MAX; N]
-        } else {
-            [0; N]
-        };
+        let mut bytes = if negative { [u8::MAX; N] } else { [0; N] };
         let mut i = 0;
         while i < slice.len() && i < N {
             bytes[i] = slice[i];
@@ -280,22 +283,22 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 }
 
-impl<const S: bool, const N: usize, const OM: u8> Integer<S, N, 0, OM> {    
+impl<const S: bool, const N: usize, const OM: u8> Integer<S, N, 0, OM> {
     /// Returns the representation of `self` as a byte array in big-endian order.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// type U24 = Uint<3>;
     /// type I24 = Int<3>;
-    /// 
+    ///
     /// let a: U24 = n!(0x3B2C4E);
     /// assert_eq!(a.to_be_bytes(), [0x3B, 0x2C, 0x4E]);
-    /// 
+    ///
     /// let b: I24 = n!(0xFF8A06).cast_signed();
     /// assert_eq!(b.to_be_bytes(), [0xFF, 0x8A, 0x06]);
     /// ```
@@ -306,20 +309,20 @@ impl<const S: bool, const N: usize, const OM: u8> Integer<S, N, 0, OM> {
     }
 
     /// Returns the representation of `self` as a byte array in little-endian order.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// type U24 = Uint<3>;
     /// type I24 = Int<3>;
-    /// 
+    ///
     /// let a: U24 = n!(0x6FABD7);
     /// assert_eq!(a.to_le_bytes(), [0xD7, 0xAB, 0x6F]);
-    /// 
+    ///
     /// let b: I24 = n!(0x6F75FF);
     /// assert_eq!(b.to_le_bytes(), [0xFF, 0x75, 0x6F]);
     /// ```
@@ -330,20 +333,20 @@ impl<const S: bool, const N: usize, const OM: u8> Integer<S, N, 0, OM> {
     }
 
     /// Creates an integer value from a byte array in big-endian order.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// type U24 = Uint<3>;
     /// type I24 = Int<3>;
-    /// 
+    ///
     /// let bytes = [0x3B, 0x2C, 0x4E];
     /// assert_eq!(U24::from_be_bytes(bytes), n!(0x3B2C4E));
-    /// 
+    ///
     /// let bytes = [0x06, 0x8A, 0xFF];
     /// assert_eq!(I24::from_be_bytes(bytes), n!(0x068AFF));
     /// ```
@@ -354,20 +357,20 @@ impl<const S: bool, const N: usize, const OM: u8> Integer<S, N, 0, OM> {
     }
 
     /// Creates an integer value from a byte array in little-endian order.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
-    /// 
+    ///
     /// type U24 = Uint<3>;
     /// type I24 = Int<3>;
-    /// 
+    ///
     /// let bytes = [0xD7, 0xAB, 0x6F];
     /// assert_eq!(U24::from_le_bytes(bytes), n!(0x6FABD7));
-    /// 
+    ///
     /// let bytes = [0xFF, 0x75, 0x6F];
     /// assert_eq!(I24::from_le_bytes(bytes), n!(0x6F75FF));
     /// ```
@@ -408,12 +411,12 @@ mod tests {
 
                         // first, test that the original bytes as slice is converted back to the same integer
                         let mut passed = convert::test_eq(Big::[<from_ $endian _slice>](&bytes[..]), Some(int));
-                        
+
                         let bytes_vec = [<$endian _bytes_vec>](&bytes[..], pad_bits, pad_length); // random vector padded with a random amount of bytes
                         // test that the padded bytes are still converted back to the same integer
                         passed &= convert::test_eq(Big::[<from_ $endian _slice>](&bytes_vec[..]), Some(int));
 
-                        
+
                         // most significant byte position, range of bytes indices to change to padding bits, range of bytes indices that will result in the same integer without the padding bits
                         let (msb, pad_range, slice_range) = [<$endian _pad>](pad_length, Primitive::BITS);
 
@@ -504,7 +507,7 @@ mod tests {
                 let a = STEST::from_bytes(a.to_le_bytes());
                 let mut b = a;
                 b.as_bytes_mut().reverse();
-                
+
                 b == a.swap_bytes()
             }
         }

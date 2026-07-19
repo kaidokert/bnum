@@ -129,7 +129,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
         // TODO: implement a faster multiplication algorithm for large values of `N`
         let a = self.to_digits::<u128>();
         let b = rhs.to_digits::<u128>();
-        
+
         let (out, mut overflow) = a.overflowing_mul(b);
         let mut out = out.to_integer();
 
@@ -316,7 +316,10 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     #[inline]
     pub const fn overflowing_shl(self, rhs: Exponent) -> (Self, bool) {
         unsafe {
-            (Self::unchecked_shl_internal(self, rhs % Self::BITS), rhs >= Self::BITS)
+            (
+                Self::unchecked_shl_internal(self, rhs % Self::BITS),
+                rhs >= Self::BITS,
+            )
         }
     }
 

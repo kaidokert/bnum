@@ -1,7 +1,7 @@
+use super::TestConvert;
 use crate::Integer;
 use crate::cast::CastFrom;
 use core::fmt::{self, Debug, Formatter};
-use super::TestConvert;
 use quickcheck::Arbitrary;
 
 // This is a simple integer type which we use to test against methods on `Integer` that access the underlying bytes, or use wide digits.
@@ -128,9 +128,9 @@ impl<const S: bool, const B: usize> BitInt<S, B> {
     }
 }
 
+use crate::cast::As;
 use crate::errors::ParseIntError;
 use core::num::IntErrorKind;
-use crate::cast::As;
 
 impl<const B: usize> BitInt<false, B> {
     pub fn from_str_radix(s: &str, radix: u32) -> Result<Self, crate::errors::ParseIntError> {
@@ -139,11 +139,15 @@ impl<const B: usize> BitInt<false, B> {
         }
         let mut out = Self::ZERO;
         for c in s.chars() {
-            let digit = c.to_digit(radix).ok_or(ParseIntError { kind: IntErrorKind::InvalidDigit })?;
+            let digit = c.to_digit(radix).ok_or(ParseIntError {
+                kind: IntErrorKind::InvalidDigit,
+            })?;
             let (new_out, o1) = out.overflowing_mul(radix.as_());
             let (new_out, o2) = new_out.overflowing_add(digit.as_());
             if o1 || o2 {
-                return Err(ParseIntError { kind: IntErrorKind::PosOverflow });
+                return Err(ParseIntError {
+                    kind: IntErrorKind::PosOverflow,
+                });
             }
             out = new_out;
         }
@@ -276,7 +280,9 @@ impl<const B: usize> BitInt<false, B> {
     }
 }
 
-impl<const S: bool, const B: usize, const R: bool, const A: usize> CastFrom<BitInt<R, A>> for BitInt<S, B> {
+impl<const S: bool, const B: usize, const R: bool, const A: usize> CastFrom<BitInt<R, A>>
+    for BitInt<S, B>
+{
     fn cast_from(value: BitInt<R, A>) -> Self {
         let mut out = if value.is_negative() {
             Self { bits: [true; B] }
@@ -291,7 +297,9 @@ impl<const S: bool, const B: usize, const R: bool, const A: usize> CastFrom<BitI
     }
 }
 
-impl<const S: bool, const B: usize, const R: bool, const A: usize> TryFrom<&BitInt<R, A>> for BitInt<S, B> {
+impl<const S: bool, const B: usize, const R: bool, const A: usize> TryFrom<&BitInt<R, A>>
+    for BitInt<S, B>
+{
     type Error = crate::errors::TryFromIntError;
 
     fn try_from(value: &BitInt<R, A>) -> Result<Self, Self::Error> {
@@ -303,21 +311,21 @@ impl<const S: bool, const B: usize, const R: bool, const A: usize> TryFrom<&BitI
                 } else {
                     Ok(Self::cast_from(value))
                 }
-            },
+            }
             (false, true) => {
                 if A - (value.leading_zeros() as usize) > B - 1 {
                     Err(crate::errors::TryFromIntError(()))
                 } else {
                     Ok(Self::cast_from(value))
                 }
-            },
+            }
             (true, false) => {
                 if value.is_negative() || (A - (value.leading_zeros() as usize) > B) {
                     Err(crate::errors::TryFromIntError(()))
                 } else {
                     Ok(Self::cast_from(value))
                 }
-            },
+            }
             (true, true) => {
                 if value.is_negative() {
                     if A - (value.leading_ones() as usize) > B - 1 {
@@ -379,7 +387,9 @@ macro_rules! bitint_from_to_primitive_int {
     };
 }
 
-bitint_from_to_primitive_int!(u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
+bitint_from_to_primitive_int!(
+    u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
+);
 
 use core::ops::{BitAnd, BitOr, BitXor, Not};
 
@@ -492,6 +502,6 @@ macro_rules! integer_from_bit_int {
 integer_from_bit_int!(
     8, 16, 32, 64, 128, 256, 512, // powers of two
     56, 144, 160, 488, // non-powers of two, multiples of 8
-    2, 3, 4, 5, 7, 9, 11, 15, 23, 31, 43, 59, 61, 73, 89, 97, 101, 113, 127, 129, 173, 255, 289, 366,
-    402, 422 // non-multiples of 8
+    2, 3, 4, 5, 7, 9, 11, 15, 23, 31, 43, 59, 61, 73, 89, 97, 101, 113, 127, 129, 173, 255, 289,
+    366, 402, 422 // non-multiples of 8
 );

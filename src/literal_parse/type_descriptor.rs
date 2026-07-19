@@ -66,9 +66,11 @@ pub const fn get_overflow_mode(suffix: &str) -> u8 {
 }
 
 #[doc(hidden)]
-pub const fn get_integer_params(type_descriptor: &str) -> Result<(bool, usize, u8), (TypeDescriptorError, &str)> {
+pub const fn get_integer_params(
+    type_descriptor: &str,
+) -> Result<(bool, usize, u8), (TypeDescriptorError, &str)> {
     use crate::OverflowMode;
-    
+
     let bytes = type_descriptor.as_bytes();
     if bytes.is_empty() {
         return Err((TypeDescriptorError::InvalidSuffix, type_descriptor));
@@ -99,7 +101,12 @@ pub const fn get_integer_params(type_descriptor: &str) -> Result<(bool, usize, u
     let (sign_str, rest) = match first_numeric_index {
         Some(1) => type_descriptor.split_at(1),
         Some(0) => return Err((TypeDescriptorError::NoSignDescriptor, "")), // no sign descriptor
-        Some(idx) => return Err((TypeDescriptorError::InvalidSignDescriptor, type_descriptor.split_at(idx).0)), // more than one character for the sign descriptor, so must be invalid
+        Some(idx) => {
+            return Err((
+                TypeDescriptorError::InvalidSignDescriptor,
+                type_descriptor.split_at(idx).0,
+            ));
+        } // more than one character for the sign descriptor, so must be invalid
         None => return Err((TypeDescriptorError::NoBitWidthSpecified, "")),
     };
     assert!(last_numeric_index >= 1); // as now we know there must be at least one numeric character, and the first numeric character is at index 1
@@ -142,13 +149,27 @@ pub const fn get_integer_params(type_descriptor: &str) -> Result<(bool, usize, u
 }
 
 #[doc(hidden)]
-pub const fn get_integer_params_fallback(type_descriptor: &str) -> (bool, Result<bool, (TypeDescriptorError, &str)>, usize, usize, u8) {
+pub const fn get_integer_params_fallback(
+    type_descriptor: &str,
+) -> (
+    bool,
+    Result<bool, (TypeDescriptorError, &str)>,
+    usize,
+    usize,
+    u8,
+) {
     let result = get_integer_params(type_descriptor);
     let (implicit, sign_result, n, b, om) = if type_descriptor.is_empty() {
         (true, Ok(false), 8, 0, 0)
     } else {
         match result {
-            Ok((s, bw, om)) => (false, Ok(s), get_size_params_from_bits(bw).0, get_size_params_from_bits(bw).1, om),
+            Ok((s, bw, om)) => (
+                false,
+                Ok(s),
+                get_size_params_from_bits(bw).0,
+                get_size_params_from_bits(bw).1,
+                om,
+            ),
             Err(err) => (true, Err(err), 8, 0, 0),
         }
     };

@@ -13,20 +13,38 @@ pub enum ParseIntLiteralError {
 // IMPLICIT = true means that parameters are not specified in the literal, so rely on type inference
 // TODO: for floats, have extra const generic param F (of type bool, indicates whether float or int) on IntLiteralParser, this will allow us to use the n macro to parse both floats and integers, and type inference can work out which one is needed in the case that no suffix is provided
 #[doc(hidden)]
-pub struct IntLiteralParser<const IMPLICIT: bool, const S: bool, const N: usize, const B: usize, const OM: u8>;
+pub struct IntLiteralParser<
+    const IMPLICIT: bool,
+    const S: bool,
+    const N: usize,
+    const B: usize,
+    const OM: u8,
+>;
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> IntLiteralParser<true, S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8>
+    IntLiteralParser<true, S, N, B, OM>
+{
     #[doc(hidden)]
     #[inline]
-    pub const fn parse<const R: bool, const M: usize, const A: usize, const OM1: u8>(negative: bool, radix: u32, literal_str_bytes: &[u8]) -> Integer<R, M, A, OM1> {
+    pub const fn parse<const R: bool, const M: usize, const A: usize, const OM1: u8>(
+        negative: bool,
+        radix: u32,
+        literal_str_bytes: &[u8],
+    ) -> Integer<R, M, A, OM1> {
         Integer::from_literal_str(negative, radix, literal_str_bytes)
     }
 }
 
-impl<const S: bool, const N: usize, const B: usize, const OM: u8> IntLiteralParser<false, S, N, B, OM> {
+impl<const S: bool, const N: usize, const B: usize, const OM: u8>
+    IntLiteralParser<false, S, N, B, OM>
+{
     #[doc(hidden)]
     #[inline]
-    pub const fn parse(negative: bool, radix: u32, literal_str_bytes: &[u8]) -> Integer<S, N, B, OM> {
+    pub const fn parse(
+        negative: bool,
+        radix: u32,
+        literal_str_bytes: &[u8],
+    ) -> Integer<S, N, B, OM> {
         Integer::from_literal_str(negative, radix, literal_str_bytes)
     }
 }
@@ -56,7 +74,11 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
 
     #[doc(hidden)]
     #[inline]
-    pub const fn from_literal_str_checked(negative: bool, radix: u32, digit_bytes: &[u8]) -> Result<Self, ParseIntLiteralError> {
+    pub const fn from_literal_str_checked(
+        negative: bool,
+        radix: u32,
+        digit_bytes: &[u8],
+    ) -> Result<Self, ParseIntLiteralError> {
         if digit_bytes.is_empty() {
             return Err(ParseIntLiteralError::NoDigits);
         }

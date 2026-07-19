@@ -1,6 +1,6 @@
-use crate::{Byte, Integer, Uint};
 use super::MAX_RADIX_POWERS;
 use crate::integer::radix::assert_range;
+use crate::{Byte, Integer, Uint};
 use alloc::{string::String, vec::Vec};
 
 #[inline]
@@ -186,14 +186,12 @@ macro_rules! impl_desc {
 //     }
 // }
 
-
-
 #[doc = concat!("(Unsigned integers only.) ", impl_desc!())]
 impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     // this is faster than just using div_rem_u64 by the radix: for the naive method, we perform log_r (n) division-remainder calcs on Uints, each one takes O(M(n)) time, where M(n) is multiplication time complexity
     // for dividing by highest power h = r^e, we perform log_h (n) = log_r (n) / e division-remainder calcs on Uints, each one takes O(M(n)) time. for such calc, we perform e division-remainder calcs on u64s, each one takes O(1) time
     // so number of division-remainder calcs is same, but we save a factor of e in the complexity
-    #[inline] 
+    #[inline]
     fn to_digits_le(self, radix: u32) -> Vec<u8> {
         // return RadixDigitsIter2::new(self, radix).collect();
         let mut digits = Vec::with_capacity(Self::BITS.div_ceil(radix.ilog2()) as usize); // log_r (2^B) = B log_r (2) = B/log_2 (r)
@@ -326,12 +324,8 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
             return vec![0];
         }
         match radix {
-            2 | 4 | 16 | 256 => {
-                self.to_exact_bitwise_digits_le(radix)
-            },
-            8 | 32 | 64 | 128 => {
-                self.to_inexact_bitwise_digits_le(radix)
-            },
+            2 | 4 | 16 | 256 => self.to_exact_bitwise_digits_le(radix),
+            8 | 32 | 64 | 128 => self.to_inexact_bitwise_digits_le(radix),
             10 => self.to_digits_le(10),
             _ => self.to_digits_le(radix),
         }
@@ -354,7 +348,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     /// let src = "abcdefghijklmnopqrstuvwxyz";
     /// let n = U512::from_str_radix(src, 36).unwrap();
     /// assert_eq!(n.to_str_radix(36), src);
-    /// 
+    ///
     /// let a: I512 = n!(-0o123456701234567);
     /// assert_eq!(a.to_str_radix(8), "-123456701234567");
     /// ```
@@ -380,7 +374,7 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
 mod tests {
     crate::test::test_all! {
         testing integers;
-        
+
         crate::test::quickcheck_from_to_radix!(stest, str_radix, 36);
     }
 

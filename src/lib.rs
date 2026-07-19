@@ -26,14 +26,14 @@ extern crate alloc;
 mod integer;
 
 pub mod cast;
+mod digits;
 mod doc;
 pub mod errors;
 mod helpers;
 #[doc(hidden)]
 pub mod literal_parse;
-pub mod prelude;
-mod digits;
 mod overflow;
+pub mod prelude;
 
 // #[cfg(feature = "float")]
 // mod float;
@@ -50,6 +50,7 @@ type Exponent = u32;
 type Byte = u8;
 
 pub use integer::{Int, Integer, Uint};
+pub use integer::ct_wrapper::Ct;
 pub use overflow::OverflowMode;
 
 // #[cfg(feature = "float")]

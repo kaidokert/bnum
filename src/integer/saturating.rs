@@ -1,7 +1,7 @@
 use super::Uint;
-use crate::{Integer, Int};
 use crate::Exponent;
 use crate::doc;
+use crate::{Int, Integer};
 
 macro_rules! impl_desc {
     () => {
@@ -12,18 +12,18 @@ macro_rules! impl_desc {
 #[doc = impl_desc!()]
 impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, B, OM> {
     /// Saturating integer addition. Computes `self + rhs`, returning `Self::MAX` if the result is too large to be represented by `Self`, or `Self::MIN` if the result is too small to be represented by `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U1024, I1024};
-    /// 
+    ///
     /// assert_eq!(n!(1U1024).saturating_add(n!(1)), n!(2));
     /// assert_eq!(U1024::MAX.saturating_add(U1024::MAX), U1024::MAX);
-    /// 
+    ///
     /// assert_eq!(I1024::MIN.saturating_add(n!(-1)), I1024::MIN);
     /// assert_eq!(I1024::MAX.saturating_add(n!(1)), I1024::MAX);
     /// ```
@@ -43,18 +43,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Saturating integer subtraction. Computes `self - rhs`, returning `Self::MAX` if the result is too large to be represented by `Self`, or `Self::MIN` if the result is too small to be represented by `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U256, I256};
-    /// 
+    ///
     /// assert_eq!(n!(1U256).saturating_sub(n!(1)), n!(0));
     /// assert_eq!(n!(1U256).saturating_sub(n!(2)), n!(0));
-    /// 
+    ///
     /// assert_eq!(I256::MIN.saturating_sub(I256::MAX), I256::MIN);
     /// assert_eq!(I256::MAX.saturating_sub(n!(-1)), I256::MAX);
     /// ```
@@ -74,18 +74,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Saturating integer multiplication. Computes `self * rhs`, returning `Self::MAX` if the result is too large to be represented by `Self`, or `Self::MIN` if the result is too small to be represented by `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U1024, I1024};
-    /// 
+    ///
     /// assert_eq!(n!(1U1024).saturating_mul(n!(1)), n!(1));
     /// assert_eq!(U1024::MAX.saturating_mul(n!(2)), U1024::MAX);
-    /// 
+    ///
     /// assert_eq!(I1024::MIN.saturating_mul(n!(2)), I1024::MIN);
     /// assert_eq!(I1024::MAX.saturating_mul(n!(3)), I1024::MAX);
     /// ```
@@ -105,19 +105,19 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Saturating integer division. The only time the result can saturate is if the integer is signed, and `self` is [`Self::MIN`] and `rhs` is `-1`, in which case the result is [`Self::MAX`].
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if `rhs` is zero.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::I512;
-    /// 
+    ///
     /// assert_eq!(n!(5U512).saturating_div(n!(2)), n!(2));
     /// assert_eq!(I512::MIN.saturating_div(n!(-1)), I512::MAX);
     /// ```
@@ -129,19 +129,19 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Saturating Euclidean integer division. The only time the result can saturate is if the integer is signed, and `self` is [`Self::MIN`] and `rhs` is `-1`, in which case the result is [`Self::MAX`].
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function will panic if `rhs` is zero.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::I512;
-    /// 
+    ///
     /// assert_eq!(n!(19U512).saturating_div_euclid(n!(5)), n!(3));
     /// assert_eq!(I512::MIN.saturating_div_euclid(n!(-1)), I512::MAX);
     /// ```
@@ -166,18 +166,18 @@ impl<const S: bool, const N: usize, const B: usize, const OM: u8> Integer<S, N, 
     }
 
     /// Saturating exponentiation. Computes `self.pow(exp)`, returning `Self::MAX` if the result is too large to be represented by `Self`, or `Self::MIN` if the result is too small to be represented by `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{U256, I256};
-    /// 
+    ///
     /// assert_eq!(n!(2U256).saturating_pow(8), n!(256));
     /// assert_eq!(n!(2U256).saturating_pow(256), U256::MAX);
-    /// 
+    ///
     /// assert_eq!(n!(-2I256).saturating_pow(257), I256::MIN);
     /// assert_eq!(n!(-2I256).saturating_pow(256), I256::MAX);
     /// ```
@@ -216,15 +216,15 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     }
 
     /// Saturating addition with a signed integer of the same bit width. Computes `self + rhs`, returning `Self::MAX` if the result is too large to be represented by `Self`, or `Self::MIN` if the result is negative.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::U512;
-    /// 
+    ///
     /// assert_eq!(n!(1U512).saturating_add_signed(n!(-1)), n!(0));
     /// assert_eq!(U512::MAX.saturating_add_signed(n!(1)), U512::MAX);
     /// assert_eq!(n!(1U512).saturating_add_signed(n!(-2)), n!(0));
@@ -242,21 +242,20 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
     /// Saturating subtraction with a signed integer of the same bit width. Computes `self - rhs`, returning `Self::MIN` if the result is negative, or `Self::MAX` if the result is too large to be represented by `Self`.
     ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::U2048;
-    /// 
+    ///
     /// assert_eq!(n!(1U2048).saturating_sub_signed(n!(-1)), n!(2));
     /// assert_eq!(U2048::MAX.saturating_sub_signed(n!(-4)), U2048::MAX);
     /// assert_eq!(n!(1U2048).saturating_sub_signed(n!(3)), n!(0));
     /// ```
     #[must_use = doc::must_use_op!()]
     #[inline]
-    pub const fn saturating_sub_signed(self, rhs: Int<N, B, OM>) -> Self
-    {
+    pub const fn saturating_sub_signed(self, rhs: Int<N, B, OM>) -> Self {
         if rhs.is_negative() {
             Self::saturate_up(self.checked_sub_signed(rhs))
         } else {
@@ -278,15 +277,15 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
 #[doc = concat!("(Signed integers only.) ", impl_desc!())]
 impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     /// Saturating addition with an unsigned integer of the same bit width. Computes `self + rhs`, returning `Self::MAX` if the result is too large to be represented by `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::{I512, U512};
-    /// 
+    ///
     /// assert_eq!(n!(-1I512).saturating_add_unsigned(n!(1)), n!(0));
     /// assert_eq!(n!(0I512).saturating_add_unsigned(U512::MAX), I512::MAX);
     /// ```
@@ -300,15 +299,15 @@ impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     }
 
     /// Saturating subtraction with an unsigned integer of the same bit width. Computes `self + rhs`, returning `Self::MIN` if the result is too small to be represented by `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::I1024;
-    /// 
+    ///
     /// assert_eq!(n!(1I1024).saturating_sub_unsigned(n!(1)), n!(0));
     /// assert_eq!(I1024::MIN.saturating_sub_unsigned(n!(1)), I1024::MIN);
     /// ```
@@ -322,13 +321,13 @@ impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     }
 
     /// Computes the absolute value of `self`, returning [`Self::MAX`] if the result is too large to be represented by `Self`. The only time this can happen is if `self` is [`Self::MIN`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::I2048;
-    /// 
+    ///
     /// assert_eq!(n!(-7I2048).saturating_abs(), n!(7));
     /// assert_eq!(n!(22I2048).saturating_abs(), n!(22));
     /// assert_eq!(I2048::MIN.saturating_abs(), I2048::MAX);
@@ -343,13 +342,13 @@ impl<const N: usize, const B: usize, const OM: u8> Int<N, B, OM> {
     }
 
     /// Saturating negation. Computes `-self`, returning [`Self::MAX`] if the result is too large to be represented by `Self`. The only time this can happen is if `self` is [`Self::MIN`].
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use bnum::prelude::*;
     /// use bnum::types::I256;
-    /// 
+    ///
     /// assert_eq!(n!(7I256).saturating_neg(), n!(-7));
     /// assert_eq!(n!(-22I256).saturating_neg(), n!(22));
     /// assert_eq!(I256::MIN.saturating_neg(), I256::MAX);

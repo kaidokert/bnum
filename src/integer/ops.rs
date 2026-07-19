@@ -1,5 +1,5 @@
-use crate::{Int, Integer};
 use crate::OverflowMode;
+use crate::{Int, Integer};
 
 use core::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Div, DivAssign,
@@ -171,7 +171,7 @@ macro_rules! shift_impl {
                     OverflowMode::Panic => Exponent::try_from(rhs).expect(crate::errors::err_msg!($err)),
                     OverflowMode::Saturate => Exponent::try_from(rhs).unwrap_or(Exponent::MAX), // this is fine since we have the assertion in [`Self::from_bytes`] that N < 2^29, so any rhs >= Exponent::MAX will saturate
                 };
-                
+
                 Self::$method(self, rhs)
             }
         }
@@ -197,7 +197,9 @@ macro_rules! all_shift_impls {
     }
 }
 
-all_shift_impls!(u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
+all_shift_impls!(
+    u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
+);
 
 shift_impl!(<const S: bool, const N: usize, const B: usize, const R: bool, const M: usize, const A: usize, const OM: u8> Integer<S, N, B, OM>, Shl, ShlAssign, shl, shl_assign, "attempt to shift left with overflow", shift_by: Integer<R, M, A, OM>);
 shift_impl!(<const S: bool, const N: usize, const B: usize, const R: bool, const M: usize, const A: usize, const OM: u8> Integer<S, N, B, OM>, Shr, ShrAssign, shr, shr_assign, "attempt to shift right with overflow", shift_by: Integer<R, M, A, OM>);
@@ -225,7 +227,7 @@ crate::test::test_all_custom_bit_widths! {
 mod tests {
     use super::*;
     use crate::Exponent;
-    use crate::test::{test_bignum, debug_skip};
+    use crate::test::{debug_skip, test_bignum};
 
     macro_rules! test_shifts {
         ($($rhs: ty), *) => {

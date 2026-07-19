@@ -132,7 +132,6 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
                 out.bytes[byte_index] |= digit << bit_shift;
             } else {
                 if !SKIP_UNDERSCORES && bit_width > Self::BITS as usize {
-                    
                     return Err(ParseIntError {
                         kind: IntErrorKind::PosOverflow,
                     });
@@ -140,7 +139,8 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
                 bit_width += radix_log2; // increment after the check, as we already initialised bit_width as the bit width of the first non-zero digit
             }
         }
-        if SKIP_UNDERSCORES && overflow { // we didn't return overflow error if parsing a literal, so return it now. guaranteed to have an overflow error if SKIP_UNDERSCORES is true
+        if SKIP_UNDERSCORES && overflow {
+            // we didn't return overflow error if parsing a literal, so return it now. guaranteed to have an overflow error if SKIP_UNDERSCORES is true
             return Err(ParseIntError {
                 kind: IntErrorKind::PosOverflow,
             });
@@ -177,7 +177,8 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
                 });
             }
             out = new_out;
-            match out.checked_add(Self::from_byte(digit)) { // checked_add is necessary here
+            match out.checked_add(Self::from_byte(digit)) {
+                // checked_add is necessary here
                 Some(n) => out = n,
                 None => {
                     if SKIP_UNDERSCORES {
@@ -190,7 +191,8 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
                 }
             };
         }
-        if SKIP_UNDERSCORES && overflow { // if we get to this stage (if SKIP_UNDERSCORES is true), then there is overflow and there were no invalid digits, so return overflow error
+        if SKIP_UNDERSCORES && overflow {
+            // if we get to this stage (if SKIP_UNDERSCORES is true), then there is overflow and there were no invalid digits, so return overflow error
             return Err(ParseIntError {
                 kind: IntErrorKind::PosOverflow,
             });
@@ -198,7 +200,11 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
         Ok(out)
     }
 
-    pub(crate) const fn from_buf_radix<const SKIP_UNDERSCORES: bool, const ASCII: bool, const BE: bool>(
+    pub(crate) const fn from_buf_radix<
+        const SKIP_UNDERSCORES: bool,
+        const ASCII: bool,
+        const BE: bool,
+    >(
         buf: &[u8],
         radix: u32,
     ) -> Result<Self, ParseIntError> {
@@ -240,9 +246,7 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
             return Self::from_be_slice(buf);
         }
 
-        crate::helpers::ok!(Self::from_buf_radix::<false, false, true>(
-            buf, radix
-        ))
+        crate::helpers::ok!(Self::from_buf_radix::<false, false, true>(buf, radix))
     }
 
     /// Converts a slice of little-endian digits in the given radix to an integer. Each `u8` of the slice is interpreted as one digit of base `radix` of the number, so this function will return `None` if any digit is greater than or equal to `radix`, or if the integer represented by the digits is too large to be represented by `Self`. Otherwise, the integer is wrapped in `Some`.
@@ -272,9 +276,7 @@ impl<const N: usize, const B: usize, const OM: u8> Uint<N, B, OM> {
             return Self::from_le_slice(buf);
         }
 
-        crate::helpers::ok!(Self::from_buf_radix::<false, false, false>(
-            buf, radix
-        ))
+        crate::helpers::ok!(Self::from_buf_radix::<false, false, false>(buf, radix))
     }
 }
 
